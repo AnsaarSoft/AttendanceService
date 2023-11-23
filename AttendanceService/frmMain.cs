@@ -13,15 +13,16 @@ namespace AttendanceService
     public partial class frmMain : RadForm
     {
 
-        #region Variable
+        #region Variables
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private string ConnectionString = "";
         private DataTable dtEmployees;
         private DataTable dtProcessed;
+
         #endregion
 
-        #region Functions
 
+        #region Functions
         void CreateGrid()
         {
             try
@@ -316,7 +317,7 @@ namespace AttendanceService
                             bool flgConfirmedOut, flgExpectedOut;
                             string TimeIn, TimeOut, WorkHour;
                             int iTimeIn, iTimeOut, iWorkHour;
-                            bool flgEarlyIn = false, flgEarlyOut = false, flgLateIn= false, flgLateOut=false;
+                            bool flgEarlyIn = false, flgEarlyOut = false, flgLateIn = false, flgLateOut = false;
                             string EarlyIn = string.Empty, EarlyOut = string.Empty, LateIn = string.Empty, LateOut = string.Empty;
                             bool flgNewLeave = false;
                             string LeaveHour = string.Empty, LeaveType = string.Empty;
@@ -484,27 +485,27 @@ namespace AttendanceService
 
                             #region Early/Late Ins
 
-                            if(iTimeIn > 0 )
+                            if (iTimeIn > 0)
                             {
-                                if(iTimeIn - iShiftIn  > 0)
+                                if (iTimeIn - iShiftIn > 0)
                                 {
                                     LateIn = TimeConvert(iTimeIn - iShiftIn);
                                     flgLateIn = true;
                                 }
-                                if(iShiftIn - iTimeIn > 0)
+                                if (iShiftIn - iTimeIn > 0)
                                 {
                                     EarlyIn = TimeConvert(iShiftIn - iTimeIn);
                                     flgEarlyIn = true;
                                 }
                             }
-                            if(iTimeOut > 0 )
+                            if (iTimeOut > 0)
                             {
-                                if(iTimeOut - iShiftOut > 0)
+                                if (iTimeOut - iShiftOut > 0)
                                 {
                                     LateOut = TimeConvert(iTimeOut - iShiftOut);
                                     flgLateOut = true;
                                 }
-                                if(iShiftOut - iTimeOut > 0)
+                                if (iShiftOut - iTimeOut > 0)
                                 {
                                     EarlyOut = TimeConvert(iShiftOut - iTimeOut);
                                     flgEarlyOut = true;
@@ -521,7 +522,7 @@ namespace AttendanceService
                                 var LeaveCheck = (from a in odb.TrnsLeavesRequest
                                                   where a.LeaveFrom <= i && a.LeaveTo >= i
                                                   select a).Count();
-                                if(LeaveCheck > 0 )
+                                if (LeaveCheck > 0)
                                 {
                                     flgNewLeave = false;
                                     LeaveHour = ShiftDuration;
@@ -529,6 +530,49 @@ namespace AttendanceService
                                     LeaveTypeID = 10;
                                 }
                             }
+
+                            //if workhour and shift hour is ok
+                            ////but not on shift time.
+                            if(iShiftDuration <= iWorkHour) 
+                            { 
+                                if (flgLateIn)
+                                {
+                                    flgNewLeave = false;
+                                    LeaveHour = LateIn;
+                                    LeaveType = "Absent";
+                                    LeaveTypeID = 10;
+                                }
+                                if(flgEarlyOut)
+                                {
+                                    flgNewLeave = false;
+                                    LeaveHour = EarlyOut;
+                                    LeaveType = "Absent";
+                                    LeaveTypeID = 10;
+                                }
+                            }
+
+
+                            //if workhour is not ok 
+                            if(iShiftDuration > iWorkHour)
+                            {
+                                if(flgLateIn)
+                                {
+                                    flgNewLeave = false;
+                                    LeaveHour = LateIn;
+                                    LeaveType = "Absent";
+                                    LeaveTypeID = 10;
+                                }
+                                if (flgEarlyOut)
+                                {
+                                    flgNewLeave = false;
+                                    LeaveHour = EarlyOut;
+                                    LeaveType = "Absent";
+                                    LeaveTypeID = 10;
+                                }
+                            }
+
+
+                            #endregion
 
                             #endregion
                         }
@@ -699,11 +743,6 @@ namespace AttendanceService
                 logger.Error(ex, ex.Message);
             }
         }
-
-
-
-
-
 
         #endregion
 
