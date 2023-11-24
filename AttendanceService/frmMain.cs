@@ -311,6 +311,7 @@ namespace AttendanceService
                         if (!flgSaved)
                         {
                             #region not saved
+
                             logger.Info($"processing will be done attendance not saved.");
                             string ShiftIn, ShiftOut, ShiftDuration;
                             int iShiftIn, iShiftOut, iShiftDuration;
@@ -322,6 +323,13 @@ namespace AttendanceService
                             bool flgNewLeave = false;
                             string LeaveHour = string.Empty, LeaveType = string.Empty;
                             int LeaveTypeID = 0;
+
+                            int OTId = 0;
+                            string OTHours = string.Empty;
+                            bool flgOT = false;
+
+                            #region Shift Data
+
                             ShiftIn = oAttendance.MstShifts.MstShiftDetails.Where(a => a.Day == oAttendance.DateDay).FirstOrDefault().StartTime;
                             ShiftOut = oAttendance.MstShifts.MstShiftDetails.Where(a => a.Day == oAttendance.DateDay).FirstOrDefault().EndTime;
                             ShiftDuration = oAttendance.MstShifts.MstShiftDetails.Where(a => a.Day == oAttendance.DateDay).FirstOrDefault().Duration;
@@ -330,6 +338,8 @@ namespace AttendanceService
                             iShiftIn = TimeConvert(ShiftIn);
                             iShiftOut = TimeConvert(ShiftOut);
                             iShiftDuration = TimeConvert(ShiftDuration);
+
+                            #endregion
 
                             #region Time In/Out
 
@@ -514,7 +524,7 @@ namespace AttendanceService
 
                             #endregion
 
-                            #region Penalt & Leaves
+                            #region Penalty & Leaves
 
                             //full day leave
                             if (iTimeIn == 0 && iTimeOut == 0)
@@ -533,29 +543,9 @@ namespace AttendanceService
 
                             //if workhour and shift hour is ok
                             ////but not on shift time.
-                            if(iShiftDuration <= iWorkHour) 
-                            { 
-                                if (flgLateIn)
-                                {
-                                    flgNewLeave = false;
-                                    LeaveHour = LateIn;
-                                    LeaveType = "Absent";
-                                    LeaveTypeID = 10;
-                                }
-                                if(flgEarlyOut)
-                                {
-                                    flgNewLeave = false;
-                                    LeaveHour = EarlyOut;
-                                    LeaveType = "Absent";
-                                    LeaveTypeID = 10;
-                                }
-                            }
-
-
-                            //if workhour is not ok 
-                            if(iShiftDuration > iWorkHour)
+                            if (iShiftDuration <= iWorkHour)
                             {
-                                if(flgLateIn)
+                                if (flgLateIn)
                                 {
                                     flgNewLeave = false;
                                     LeaveHour = LateIn;
@@ -570,6 +560,71 @@ namespace AttendanceService
                                     LeaveTypeID = 10;
                                 }
                             }
+
+
+                            //if workhour is not ok 
+                            if (iShiftDuration > iWorkHour)
+                            {
+                                if (flgLateIn)
+                                {
+                                    flgNewLeave = false;
+                                    LeaveHour = LateIn;
+                                    LeaveType = "Absent";
+                                    LeaveTypeID = 10;
+                                }
+                                if (flgEarlyOut)
+                                {
+                                    flgNewLeave = false;
+                                    LeaveHour = EarlyOut;
+                                    LeaveType = "Absent";
+                                    LeaveTypeID = 10;
+                                }
+                            }
+
+
+                            #endregion
+
+                            #region Overtime
+
+                            if (iWorkHour > iShiftDuration)
+                            {
+                                //checking timeout is also more than 
+                                //expected
+                                if (flgLateOut)
+                                {
+                                    flgOT = true;
+                                    OTHours = LateOut;
+                                    OTId = oAttendance.MstShifts.MstOverTime == null ? 0 : oAttendance.MstShifts.MstOverTime.ID;
+                                }
+                            }
+
+                            #endregion
+
+                            #region Set Datatable
+                            dtProcessed.Columns.Add("ID");
+                            dtProcessed.Columns.Add("Date");
+                            dtProcessed.Columns.Add("Day");
+                            dtProcessed.Columns.Add("Shift");
+                            dtProcessed.Columns.Add("ShiftIn");
+                            dtProcessed.Columns.Add("ShiftOut");
+                            dtProcessed.Columns.Add("ShiftDuration");
+                            dtProcessed.Columns.Add("In");
+                            dtProcessed.Columns.Add("Out");
+                            dtProcessed.Columns.Add("WorkHour");
+                            dtProcessed.Columns.Add("EarlyIn");
+                            dtProcessed.Columns.Add("LateIn");
+                            dtProcessed.Columns.Add("EarlyOut");
+                            dtProcessed.Columns.Add("LateOut");
+                            dtProcessed.Columns.Add("LeaveHour");
+                            dtProcessed.Columns.Add("LeaveType");
+                            dtProcessed.Columns.Add("LeaveNew");
+                            dtProcessed.Columns.Add("OTHour");
+                            dtProcessed.Columns.Add("OTType");
+                            dtProcessed.Columns.Add("LPCount");
+
+                            DataRow dr = dtProcessed.NewRow();
+                            dr["ID"] = oAttendance.Id;
+                            dr["Date"] = oAttendance.Date;
 
 
                             #endregion
