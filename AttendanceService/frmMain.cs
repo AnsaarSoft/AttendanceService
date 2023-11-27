@@ -1,12 +1,15 @@
 ﻿using DIHRMS;
 using NLog;
+using NLog.Layouts;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
-using Telerik.WinControls.Svg;
 using Telerik.WinControls.UI;
+using AttendanceService.Models;
 
 namespace AttendanceService
 {
@@ -18,9 +21,8 @@ namespace AttendanceService
         private string ConnectionString = "";
         private DataTable dtEmployees;
         private DataTable dtProcessed;
-
+        int Serial = 0;
         #endregion
-
 
         #region Functions
         void CreateGrid()
@@ -40,6 +42,9 @@ namespace AttendanceService
 
                 dtProcessed = new DataTable();
                 dtProcessed.Columns.Add("ID");
+                dtProcessed.Columns.Add("Serial");
+                dtProcessed.Columns.Add("EmpCode");
+                dtProcessed.Columns.Add("EmpName");
                 dtProcessed.Columns.Add("Date");
                 dtProcessed.Columns.Add("Day");
                 dtProcessed.Columns.Add("Shift");
@@ -56,9 +61,13 @@ namespace AttendanceService
                 dtProcessed.Columns.Add("LeaveHour");
                 dtProcessed.Columns.Add("LeaveType");
                 dtProcessed.Columns.Add("LeaveNew");
+                dtProcessed.Columns.Add("LeaveCount");
+                dtProcessed.Columns.Add("LTID");
                 dtProcessed.Columns.Add("OTHour");
                 dtProcessed.Columns.Add("OTType");
-                dtProcessed.Columns.Add("LPCount");
+                dtProcessed.Columns.Add("OTID");
+                dtProcessed.Columns.Add("Status");
+                grdProcess.DataSource = dtProcessed;
 
             }
             catch (Exception ex)
@@ -133,6 +142,7 @@ namespace AttendanceService
                         var oPeriods = (from a in odb.CfgPeriodDates
                                         where a.FlgLocked == false
                                         && a.CfgPayrollDefination.PayrollName == SelectedPayroll
+                                        orderby a.StartDate
                                         select a).ToList();
                         foreach (var period in oPeriods)
                         {
@@ -153,6 +163,7 @@ namespace AttendanceService
         {
             try
             {
+                dtEmployees.Rows.Clear();
                 using (var odb = new dbHRMS(ConnectionString))
                 {
                     string DepartmentValue, DesignationValue, LocationValue, BranchValue, PayrollValue;
@@ -227,8 +238,10 @@ namespace AttendanceService
                             dtEmployees.Rows.Add(false, emp.EmpID, $"{emp.FirstName} {emp.MiddleName} {emp.LastName}", emp.DepartmentName, emp.DesignationName, emp.LocationName, emp.BranchName, emp.PayrollName);
                         }
                     }
-
                 }
+                grdEmployee.DataSource = null;
+                grdEmployee.DataSource = dtEmployees;
+                grdEmployee.BestFitColumns();
             }
             catch (Exception ex)
             {
@@ -239,6 +252,13 @@ namespace AttendanceService
         {
             try
             {
+                grdEmployee.Visible = false;
+                Serial = 1;
+                dtProcessed.Rows.Clear();
+                grdProcess.Size = new System.Drawing.Size(1228, 534);
+                grdProcess.Location = new System.Drawing.Point(16, 156);
+                grdProcess.Visible = true;
+
                 using (dbHRMS odb = new dbHRMS(ConnectionString))
                 {
                     if (dtEmployees.Rows.Count > 0)
@@ -269,20 +289,73 @@ namespace AttendanceService
                                            where a.PayrollId == oPayroll.ID
                                            && a.PeriodName == cmbPeriod.SelectedItem.ToString()
                                            select a).FirstOrDefault();
-                            ProcessEmployeeMonth(oEmp, oPeriod);
+
+                            if (oPeriod is null)
+                            {
+                                logger.Info($"period not found. for employee {oEmp.EmpID}");
+                                continue;
+                            }
+
+                            var oEmpLeave = (from a in odb.MstEmployeeLeaves
+                                             where a.EmpID == oEmp.ID
+                                             && a.LeaveCalCode == "FY_23_24"
+                                             && a.LeavesEntitled > 0
+                                             select a).ToList();
+                            List<LeaveStructure> oLeaves = new List<LeaveStructure>();
+                            if (oEmpLeave is null)
+                            {
+                                logger.Info($"employee leave not assign, for employee {oEmp.EmpID}");
+
+                            }
+                            else
+                            {
+                                foreach (var leave in oEmpLeave)
+                                {
+                                    LeaveStructure oDoc = new LeaveStructure();
+                                    oDoc.ID = leave.LeaveType ?? 0;
+                                    oDoc.LeaveType = leave.MstLeaveType.Description;
+                                    oDoc.Balance = leave.LeavesEntitled + leave.LeavesCarryForward;
+                                    switch (oDoc.ID)
+                                    {
+                                        case 10:
+                                            oDoc.Priority = 10; break;
+                                        case 3:
+                                            oDoc.Priority = 1; break;
+                                        case 1:
+                                            oDoc.Priority = 2; break;
+                                        case 2:
+                                            oDoc.Priority = 3; break;
+                                        case 7:
+                                            oDoc.Priority = 4; break;
+                                        case 6:
+                                            oDoc.Priority = 5; break;
+                                        case 5:
+                                            oDoc.Priority = 6; break;
+                                        case 4:
+                                            oDoc.Priority = 7; break;
+
+                                    }
+                                    oLeaves.Add(oDoc);
+                                }
+                            }
+                            ProcessEmployeeMonth(oEmp, oPeriod, oLeaves);
                         }
                     }
 
 
 
                 }
+
+                grdProcess.DataSource = null;
+                grdProcess.DataSource = dtProcessed;
+                grdProcess.BestFitColumns();
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
             }
         }
-        void ProcessEmployeeMonth(MstEmployee oEmp, CfgPeriodDates oPeriod)
+        void ProcessEmployeeMonth(MstEmployee oEmp, CfgPeriodDates oPeriod, List<LeaveStructure> oLeaveBal)
         {
             try
             {
@@ -323,9 +396,10 @@ namespace AttendanceService
                             bool flgNewLeave = false;
                             string LeaveHour = string.Empty, LeaveType = string.Empty;
                             int LeaveTypeID = 0;
+                            decimal LeaveCount = 0;
 
                             int OTId = 0;
-                            string OTHours = string.Empty;
+                            string OTHours = string.Empty, OTType = string.Empty;
                             bool flgOT = false;
 
                             #region Shift Data
@@ -364,8 +438,8 @@ namespace AttendanceService
                                     TimeOut = (from a in odb.TrnsTempAttendance
                                                where (a.In_Out == "2" || a.In_Out == "02" || a.In_Out == "Out")
                                                && a.PunchedDate == oAttendance.Date
-                                               orderby a.ID ascending
-                                               select a.PunchedTime).LastOrDefault();
+                                               orderby a.ID descending
+                                               select a.PunchedTime).FirstOrDefault();
                                     if (string.IsNullOrEmpty(TimeOut))
                                     {
                                         TimeOut = string.Empty;
@@ -419,8 +493,8 @@ namespace AttendanceService
                                     TimeOut = (from a in odb.TrnsTempAttendance
                                                where (a.In_Out == "2" || a.In_Out == "02" || a.In_Out == "Out")
                                                && a.PunchedDate == oAttendance.Date
-                                               orderby a.ID ascending
-                                               select a.PunchedTime).LastOrDefault();
+                                               orderby a.ID descending
+                                               select a.PunchedTime).FirstOrDefault();
                                     if (string.IsNullOrEmpty(TimeOut))
                                     {
                                         TimeOut = string.Empty;
@@ -531,13 +605,32 @@ namespace AttendanceService
                             {
                                 var LeaveCheck = (from a in odb.TrnsLeavesRequest
                                                   where a.LeaveFrom <= i && a.LeaveTo >= i
+                                                  && a.EmpID == oEmp.ID
                                                   select a).Count();
-                                if (LeaveCheck > 0)
+                                if (LeaveCheck == 0)
                                 {
+                                    var oLT = (from a in oLeaveBal
+                                               where a.Balance > 0
+                                               orderby a.Priority ascending
+                                               select a).FirstOrDefault();
+                                    flgNewLeave = true;
+                                    LeaveHour = ShiftDuration;
+                                    LeaveType = oLT.LeaveType;
+                                    LeaveTypeID = oLT.ID;
+                                    LeaveCount = 1;
+                                    oLT.Balance -= 1;
+                                }
+                                else
+                                {
+                                    var oLeaveRequest = (from a in odb.TrnsLeavesRequest
+                                                         where a.LeaveFrom <= i && a.LeaveTo >= i
+                                                         && a.EmpID == oEmp.ID
+                                                         select a).FirstOrDefault();
                                     flgNewLeave = false;
                                     LeaveHour = ShiftDuration;
-                                    LeaveType = "Absent";
-                                    LeaveTypeID = 10;
+                                    LeaveType = oLeaveRequest.MstLeaveType.Description;
+                                    LeaveCount = 1;
+                                    LeaveTypeID = oLeaveRequest.LeaveType ?? 0;
                                 }
                             }
 
@@ -545,19 +638,36 @@ namespace AttendanceService
                             ////but not on shift time.
                             if (iShiftDuration <= iWorkHour)
                             {
-                                if (flgLateIn)
+                                if ((flgLateIn && flgEarlyOut) || (!flgLateIn && flgEarlyOut) || (flgLateIn && !flgEarlyOut))
                                 {
-                                    flgNewLeave = false;
-                                    LeaveHour = LateIn;
-                                    LeaveType = "Absent";
-                                    LeaveTypeID = 10;
-                                }
-                                if (flgEarlyOut)
-                                {
-                                    flgNewLeave = false;
-                                    LeaveHour = EarlyOut;
-                                    LeaveType = "Absent";
-                                    LeaveTypeID = 10;
+                                    string TimeDiff = TimeConvert(TimeConvert(LateIn) + TimeConvert(EarlyOut));
+                                    var LeaveCheck = (from a in odb.TrnsLeavesRequest
+                                                      where a.LeaveFrom <= i && a.LeaveTo >= i
+                                                      && a.EmpID == oEmp.ID
+                                                      select a).Count();
+                                    if (LeaveCheck == 0)
+                                    {
+                                        var oLT = (from a in oLeaveBal
+                                                   where a.Balance > 0
+                                                   orderby a.Priority ascending
+                                                   select a).FirstOrDefault();
+                                        flgNewLeave = true;
+                                        LeaveHour = TimeDiff;
+                                        LeaveType = oLT.LeaveType;
+                                        LeaveTypeID = oLT.ID;
+                                        oLT.Balance -= 1;
+                                    }
+                                    else
+                                    {
+                                        var oLeaveRequest = (from a in odb.TrnsLeavesRequest
+                                                             where a.LeaveFrom <= i && a.LeaveTo >= i
+                                                             && a.EmpID == oEmp.ID
+                                                             select a).FirstOrDefault();
+                                        flgNewLeave = false;
+                                        LeaveHour = TimeDiff;
+                                        LeaveType = oLeaveRequest.MstLeaveType.Description;
+                                        LeaveTypeID = oLeaveRequest.LeaveType ?? 0;
+                                    }
                                 }
                             }
 
@@ -565,19 +675,33 @@ namespace AttendanceService
                             //if workhour is not ok 
                             if (iShiftDuration > iWorkHour)
                             {
-                                if (flgLateIn)
+                                string TimeDiff = TimeConvert(iShiftDuration -  iWorkHour);
+                                var LeaveCheck = (from a in odb.TrnsLeavesRequest
+                                                  where a.LeaveFrom <= i && a.LeaveTo >= i
+                                                  && a.EmpID == oEmp.ID
+                                                  select a).Count();
+                                if (LeaveCheck == 0)
                                 {
-                                    flgNewLeave = false;
-                                    LeaveHour = LateIn;
-                                    LeaveType = "Absent";
-                                    LeaveTypeID = 10;
+                                    var oLT = (from a in oLeaveBal
+                                               where a.Balance > 0
+                                               orderby a.Priority ascending
+                                               select a).FirstOrDefault();
+                                    flgNewLeave = true;
+                                    LeaveHour = TimeDiff;
+                                    LeaveType = oLT.LeaveType;
+                                    LeaveTypeID = oLT.ID;
+                                    oLT.Balance -= 1;
                                 }
-                                if (flgEarlyOut)
+                                else
                                 {
+                                    var oLeaveRequest = (from a in odb.TrnsLeavesRequest
+                                                         where a.LeaveFrom <= i && a.LeaveTo >= i
+                                                         && a.EmpID == oEmp.ID
+                                                         select a).FirstOrDefault();
                                     flgNewLeave = false;
-                                    LeaveHour = EarlyOut;
-                                    LeaveType = "Absent";
-                                    LeaveTypeID = 10;
+                                    LeaveHour = TimeDiff;
+                                    LeaveType = oLeaveRequest.MstLeaveType.Description;
+                                    LeaveTypeID = oLeaveRequest.LeaveType ?? 0;
                                 }
                             }
 
@@ -594,6 +718,7 @@ namespace AttendanceService
                                 {
                                     flgOT = true;
                                     OTHours = LateOut;
+                                    OTType = oAttendance.MstShifts.MstOverTime == null ? "" : oAttendance.MstShifts.MstOverTime.Description;
                                     OTId = oAttendance.MstShifts.MstOverTime == null ? 0 : oAttendance.MstShifts.MstOverTime.ID;
                                 }
                             }
@@ -601,33 +726,38 @@ namespace AttendanceService
                             #endregion
 
                             #region Set Datatable
-                            dtProcessed.Columns.Add("ID");
-                            dtProcessed.Columns.Add("Date");
-                            dtProcessed.Columns.Add("Day");
-                            dtProcessed.Columns.Add("Shift");
-                            dtProcessed.Columns.Add("ShiftIn");
-                            dtProcessed.Columns.Add("ShiftOut");
-                            dtProcessed.Columns.Add("ShiftDuration");
-                            dtProcessed.Columns.Add("In");
-                            dtProcessed.Columns.Add("Out");
-                            dtProcessed.Columns.Add("WorkHour");
-                            dtProcessed.Columns.Add("EarlyIn");
-                            dtProcessed.Columns.Add("LateIn");
-                            dtProcessed.Columns.Add("EarlyOut");
-                            dtProcessed.Columns.Add("LateOut");
-                            dtProcessed.Columns.Add("LeaveHour");
-                            dtProcessed.Columns.Add("LeaveType");
-                            dtProcessed.Columns.Add("LeaveNew");
-                            dtProcessed.Columns.Add("OTHour");
-                            dtProcessed.Columns.Add("OTType");
-                            dtProcessed.Columns.Add("LPCount");
 
                             DataRow dr = dtProcessed.NewRow();
+                            dr["Serial"] = Serial;
+                            dr["EmpCode"] = oEmp.EmpID;
+                            dr["EmpName"] = $"{oEmp.FirstName} {oEmp.MiddleName} {oEmp.LastName}";
                             dr["ID"] = oAttendance.Id;
                             dr["Date"] = oAttendance.Date;
-
-
+                            dr["Day"] = oAttendance.Date.Value.DayOfWeek.ToString();
+                            dr["Shift"] = oAttendance.MstShifts.Description;
+                            dr["ShiftIn"] = ShiftIn;
+                            dr["ShiftOut"] = ShiftOut;
+                            dr["ShiftDuration"] = ShiftDuration;
+                            dr["In"] = TimeIn;
+                            dr["Out"] = TimeOut;
+                            dr["WorkHour"] = WorkHour;
+                            dr["EarlyIn"] = EarlyIn;
+                            dr["LateIn"] = LateIn;
+                            dr["EarlyOut"] = EarlyOut;
+                            dr["LateOut"] = LateOut;
+                            dr["LeaveHour"] = LeaveHour;
+                            dr["LeaveType"] = LeaveType;
+                            dr["LeaveNew"] = flgNewLeave;
+                            dr["LTID"] = LeaveTypeID;
+                            dr["OTHour"] = OTHours;
+                            dr["OTType"] = OTType;
+                            dr["OTID"] = OTId;
+                            dr["Status"] = "Process";
+                            Serial++;
+                            dtProcessed.Rows.Add(dr);
                             #endregion
+
+
 
                             #endregion
                         }
@@ -636,6 +766,34 @@ namespace AttendanceService
                         {
                             logger.Info($"saved data was loaded.");
                             #region saved
+
+                            #region Set Datatable
+
+                            //DataRow dr = dtProcessed.NewRow();
+                            //dr["ID"] = oAttendance.Id;
+                            //dr["Date"] = oAttendance.Date;
+                            //dr["Day"] = oAttendance.Date;
+                            //dr["Shift"] = oAttendance.MstShifts.Description;
+                            //dr["ShiftIn"] = ShiftIn;
+                            //dr["ShiftOut"] = ShiftOut;
+                            //dr["ShiftDuration"] = ShiftDuration;
+                            //dr["In"] = TimeIn;
+                            //dr["Out"] = TimeOut;
+                            //dr["WorkHour"] = WorkHour;
+                            //dr["EarlyIn"] = EarlyIn;
+                            //dr["LateIn"] = LateIn;
+                            //dr["EarlyOut"] = EarlyOut;
+                            //dr["LateOut"] = LateOut;
+                            //dr["LeaveHour"] = LeaveHour;
+                            //dr["LeaveType"] = LeaveType;
+                            //dr["LeaveNew"] = flgNewLeave;
+                            //dr["LTID"] = LeaveTypeID;
+                            //dr["OTHour"] = OTHours;
+                            //dr["OTType"] = OTType;
+                            //dr["OTID"] = OTId;
+                            //dr["Status"] = "Process";
+                            #endregion
+
                             #endregion
                         }
                     }
@@ -674,7 +832,8 @@ namespace AttendanceService
             {
                 int hours = Convert.ToInt32(value / 60);
                 int minutes = value % 60;
-                return $"{string.Format("{00}", hours)}:{string.Format("{00}", minutes)}";
+                string retvalue = $"{string.Format("{00:D2}", hours)}:{string.Format("{00:D2}", minutes)}";
+                return retvalue;
             }
             catch (Exception ex)
             {
@@ -706,15 +865,21 @@ namespace AttendanceService
         {
             InitializeComponent();
         }
-        private void btnStart_Click(object sender, EventArgs e)
+        private void btnProcess_Click(object sender, EventArgs e)
         {
             try
             {
-                //Task.Run(async () =>
-                //{
-                //    await StartProcess();
-                //});
-                StartProcess();
+                if (btnProcess.Text == "Process")
+                {
+                    btnProcess.Text = "Back";
+                    StartProcess();
+                }
+                else
+                {
+                    btnProcess.Text = "Process";
+                    grdProcess.Visible = false;
+                    grdEmployee.Visible = true;
+                }
             }
             catch (Exception ex)
             {
@@ -773,6 +938,7 @@ namespace AttendanceService
                         var oPeriods = (from a in odb.CfgPeriodDates
                                         where a.FlgLocked == false
                                         && a.CfgPayrollDefination.PayrollName == SelectedPayroll
+                                        orderby a.StartDate
                                         select a).ToList();
                         foreach (var period in oPeriods)
                         {
@@ -798,7 +964,36 @@ namespace AttendanceService
                 logger.Error(ex, ex.Message);
             }
         }
-
+        private void grdEmployee_DataBindingComplete(object sender, GridViewBindingCompleteEventArgs e)
+        {
+            try
+            {
+                if (grdEmployee.Rows.Count > 0)
+                {
+                    grdEmployee.CurrentRow = grdEmployee.Rows[0];
+                    grdEmployee.TableElement.ScrollToRow(grdEmployee.Rows[0]);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, ex.Message);
+            }
+        }
+        private void grdProcess_DataBindingComplete(object sender, GridViewBindingCompleteEventArgs e)
+        {
+            try
+            {
+                if (grdProcess.Rows.Count > 0)
+                {
+                    grdProcess.CurrentRow = grdProcess.Rows[0];
+                    grdProcess.TableElement.ScrollToRow(grdProcess.Rows[0]);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, ex.Message);
+            }
+        }
         #endregion
 
     }
