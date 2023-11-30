@@ -44,6 +44,7 @@ namespace AttendanceService
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn9 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn10 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn11 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
+            Telerik.WinControls.UI.GridViewDateTimeColumn gridViewDateTimeColumn1 = new Telerik.WinControls.UI.GridViewDateTimeColumn();
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn12 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn13 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn14 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
@@ -59,13 +60,12 @@ namespace AttendanceService
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn24 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn25 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn26 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
+            Telerik.WinControls.UI.GridViewDecimalColumn gridViewDecimalColumn1 = new Telerik.WinControls.UI.GridViewDecimalColumn();
+            Telerik.WinControls.UI.GridViewCheckBoxColumn gridViewCheckBoxColumn2 = new Telerik.WinControls.UI.GridViewCheckBoxColumn();
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn27 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn28 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
-            Telerik.WinControls.UI.GridViewCheckBoxColumn gridViewCheckBoxColumn2 = new Telerik.WinControls.UI.GridViewCheckBoxColumn();
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn29 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
             Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn30 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
-            Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn31 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
-            Telerik.WinControls.UI.GridViewTextBoxColumn gridViewTextBoxColumn32 = new Telerik.WinControls.UI.GridViewTextBoxColumn();
             Telerik.WinControls.UI.TableViewDefinition tableViewDefinition2 = new Telerik.WinControls.UI.TableViewDefinition();
             this.lblStart = new System.Windows.Forms.Label();
             this.timer = new System.Windows.Forms.Timer(this.components);
@@ -87,6 +87,9 @@ namespace AttendanceService
             this.cmbBranch = new Telerik.WinControls.UI.RadDropDownList();
             this.cmbPayroll = new Telerik.WinControls.UI.RadDropDownList();
             this.cmbPeriod = new Telerik.WinControls.UI.RadDropDownList();
+            this.btnSave = new Telerik.WinControls.UI.RadButton();
+            this.btnPost = new Telerik.WinControls.UI.RadButton();
+            this.btnVoid = new Telerik.WinControls.UI.RadButton();
             ((System.ComponentModel.ISupportInitialize)(this.grdEmployee)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.grdEmployee.MasterTemplate)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.btnSearch)).BeginInit();
@@ -99,13 +102,16 @@ namespace AttendanceService
             ((System.ComponentModel.ISupportInitialize)(this.cmbBranch)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cmbPayroll)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cmbPeriod)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnSave)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnPost)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnVoid)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             this.SuspendLayout();
             // 
             // lblStart
             // 
             this.lblStart.AutoSize = true;
-            this.lblStart.Location = new System.Drawing.Point(359, 85);
+            this.lblStart.Location = new System.Drawing.Point(537, 102);
             this.lblStart.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblStart.Name = "lblStart";
             this.lblStart.Size = new System.Drawing.Size(16, 13);
@@ -125,7 +131,7 @@ namespace AttendanceService
             // lblLastRun
             // 
             this.lblLastRun.AutoSize = true;
-            this.lblLastRun.Location = new System.Drawing.Point(359, 116);
+            this.lblLastRun.Location = new System.Drawing.Point(537, 148);
             this.lblLastRun.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblLastRun.Name = "lblLastRun";
             this.lblLastRun.Size = new System.Drawing.Size(16, 13);
@@ -153,7 +159,7 @@ namespace AttendanceService
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(365, 24);
+            this.label3.Location = new System.Drawing.Point(471, 24);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(51, 13);
             this.label3.TabIndex = 8;
@@ -162,7 +168,7 @@ namespace AttendanceService
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(365, 54);
+            this.label4.Location = new System.Drawing.Point(471, 54);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(42, 13);
             this.label4.TabIndex = 10;
@@ -171,7 +177,7 @@ namespace AttendanceService
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(743, 54);
+            this.label6.Location = new System.Drawing.Point(933, 54);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(40, 13);
             this.label6.TabIndex = 17;
@@ -180,7 +186,7 @@ namespace AttendanceService
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(743, 24);
+            this.label7.Location = new System.Drawing.Point(933, 24);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(41, 13);
             this.label7.TabIndex = 15;
@@ -193,8 +199,8 @@ namespace AttendanceService
             this.grdEmployee.Font = new System.Drawing.Font("Segoe UI", 8.25F);
             this.grdEmployee.ForeColor = System.Drawing.Color.Black;
             this.grdEmployee.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.grdEmployee.Location = new System.Drawing.Point(16, 156);
-            this.grdEmployee.Margin = new System.Windows.Forms.Padding(15);
+            this.grdEmployee.Location = new System.Drawing.Point(17, 185);
+            this.grdEmployee.Margin = new System.Windows.Forms.Padding(24);
             // 
             // 
             // 
@@ -203,58 +209,58 @@ namespace AttendanceService
             gridViewCheckBoxColumn1.EnableExpressionEditor = false;
             gridViewCheckBoxColumn1.FieldName = "Select";
             gridViewCheckBoxColumn1.HeaderText = "Select";
-            gridViewCheckBoxColumn1.MinWidth = 95;
+            gridViewCheckBoxColumn1.MinWidth = 149;
             gridViewCheckBoxColumn1.Name = "Select";
-            gridViewCheckBoxColumn1.Width = 95;
+            gridViewCheckBoxColumn1.Width = 149;
             gridViewTextBoxColumn1.EnableExpressionEditor = false;
             gridViewTextBoxColumn1.FieldName = "EmpCode";
             gridViewTextBoxColumn1.HeaderText = "EmpCode";
-            gridViewTextBoxColumn1.MinWidth = 24;
+            gridViewTextBoxColumn1.MinWidth = 38;
             gridViewTextBoxColumn1.Name = "EmpCode";
             gridViewTextBoxColumn1.ReadOnly = true;
-            gridViewTextBoxColumn1.Width = 75;
+            gridViewTextBoxColumn1.Width = 118;
             gridViewTextBoxColumn2.EnableExpressionEditor = false;
             gridViewTextBoxColumn2.FieldName = "EmpName";
             gridViewTextBoxColumn2.HeaderText = "EmpName";
-            gridViewTextBoxColumn2.MinWidth = 24;
+            gridViewTextBoxColumn2.MinWidth = 38;
             gridViewTextBoxColumn2.Name = "EmpName";
             gridViewTextBoxColumn2.ReadOnly = true;
-            gridViewTextBoxColumn2.Width = 60;
+            gridViewTextBoxColumn2.Width = 94;
             gridViewTextBoxColumn3.EnableExpressionEditor = false;
             gridViewTextBoxColumn3.FieldName = "Department";
             gridViewTextBoxColumn3.HeaderText = "Department";
-            gridViewTextBoxColumn3.MinWidth = 24;
+            gridViewTextBoxColumn3.MinWidth = 38;
             gridViewTextBoxColumn3.Name = "Department";
             gridViewTextBoxColumn3.ReadOnly = true;
-            gridViewTextBoxColumn3.Width = 68;
+            gridViewTextBoxColumn3.Width = 106;
             gridViewTextBoxColumn4.EnableExpressionEditor = false;
             gridViewTextBoxColumn4.FieldName = "Designation";
             gridViewTextBoxColumn4.HeaderText = "Designation";
-            gridViewTextBoxColumn4.MinWidth = 19;
+            gridViewTextBoxColumn4.MinWidth = 30;
             gridViewTextBoxColumn4.Name = "Designation";
             gridViewTextBoxColumn4.ReadOnly = true;
-            gridViewTextBoxColumn4.Width = 68;
+            gridViewTextBoxColumn4.Width = 106;
             gridViewTextBoxColumn5.EnableExpressionEditor = false;
             gridViewTextBoxColumn5.FieldName = "Location";
             gridViewTextBoxColumn5.HeaderText = "Location";
-            gridViewTextBoxColumn5.MinWidth = 19;
+            gridViewTextBoxColumn5.MinWidth = 30;
             gridViewTextBoxColumn5.Name = "Location";
             gridViewTextBoxColumn5.ReadOnly = true;
-            gridViewTextBoxColumn5.Width = 51;
+            gridViewTextBoxColumn5.Width = 80;
             gridViewTextBoxColumn6.EnableExpressionEditor = false;
             gridViewTextBoxColumn6.FieldName = "Branch";
             gridViewTextBoxColumn6.HeaderText = "Branch";
-            gridViewTextBoxColumn6.MinWidth = 19;
+            gridViewTextBoxColumn6.MinWidth = 30;
             gridViewTextBoxColumn6.Name = "Branch";
             gridViewTextBoxColumn6.ReadOnly = true;
-            gridViewTextBoxColumn6.Width = 42;
+            gridViewTextBoxColumn6.Width = 65;
             gridViewTextBoxColumn7.EnableExpressionEditor = false;
             gridViewTextBoxColumn7.FieldName = "Payroll";
             gridViewTextBoxColumn7.HeaderText = "Payroll";
-            gridViewTextBoxColumn7.MinWidth = 19;
+            gridViewTextBoxColumn7.MinWidth = 30;
             gridViewTextBoxColumn7.Name = "Payroll";
             gridViewTextBoxColumn7.ReadOnly = true;
-            gridViewTextBoxColumn7.Width = 42;
+            gridViewTextBoxColumn7.Width = 65;
             this.grdEmployee.MasterTemplate.Columns.AddRange(new Telerik.WinControls.UI.GridViewDataColumn[] {
             gridViewCheckBoxColumn1,
             gridViewTextBoxColumn1,
@@ -269,24 +275,26 @@ namespace AttendanceService
             this.grdEmployee.MasterTemplate.ViewDefinition = tableViewDefinition1;
             this.grdEmployee.Name = "grdEmployee";
             this.grdEmployee.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.grdEmployee.Size = new System.Drawing.Size(1228, 534);
+            this.grdEmployee.Size = new System.Drawing.Size(1232, 554);
             this.grdEmployee.TabIndex = 18;
             this.grdEmployee.DataBindingComplete += new Telerik.WinControls.UI.GridViewBindingCompleteEventHandler(this.grdEmployee_DataBindingComplete);
             // 
             // btnSearch
             // 
-            this.btnSearch.Location = new System.Drawing.Point(120, 80);
+            this.btnSearch.Location = new System.Drawing.Point(36, 89);
+            this.btnSearch.Margin = new System.Windows.Forms.Padding(5);
             this.btnSearch.Name = "btnSearch";
-            this.btnSearch.Size = new System.Drawing.Size(110, 27);
+            this.btnSearch.Size = new System.Drawing.Size(130, 42);
             this.btnSearch.TabIndex = 19;
             this.btnSearch.Text = "Search";
             this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
             // 
             // btnProcess
             // 
-            this.btnProcess.Location = new System.Drawing.Point(236, 80);
+            this.btnProcess.Location = new System.Drawing.Point(176, 89);
+            this.btnProcess.Margin = new System.Windows.Forms.Padding(5);
             this.btnProcess.Name = "btnProcess";
-            this.btnProcess.Size = new System.Drawing.Size(110, 27);
+            this.btnProcess.Size = new System.Drawing.Size(130, 42);
             this.btnProcess.TabIndex = 20;
             this.btnProcess.Text = "Process";
             this.btnProcess.Click += new System.EventHandler(this.btnProcess_Click);
@@ -298,8 +306,8 @@ namespace AttendanceService
             this.grdProcess.Font = new System.Drawing.Font("Segoe UI", 8.25F);
             this.grdProcess.ForeColor = System.Drawing.Color.Black;
             this.grdProcess.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.grdProcess.Location = new System.Drawing.Point(438, 116);
-            this.grdProcess.Margin = new System.Windows.Forms.Padding(15);
+            this.grdProcess.Location = new System.Drawing.Point(706, 132);
+            this.grdProcess.Margin = new System.Windows.Forms.Padding(48);
             // 
             // 
             // 
@@ -308,181 +316,214 @@ namespace AttendanceService
             gridViewTextBoxColumn8.FieldName = "ID";
             gridViewTextBoxColumn8.HeaderText = "ID";
             gridViewTextBoxColumn8.IsVisible = false;
+            gridViewTextBoxColumn8.MinWidth = 15;
             gridViewTextBoxColumn8.Name = "ID";
             gridViewTextBoxColumn8.ReadOnly = true;
+            gridViewTextBoxColumn8.Width = 152;
             gridViewTextBoxColumn9.EnableExpressionEditor = false;
             gridViewTextBoxColumn9.FieldName = "Serial";
             gridViewTextBoxColumn9.HeaderText = "Sr.";
+            gridViewTextBoxColumn9.MinWidth = 15;
             gridViewTextBoxColumn9.Name = "Serial";
             gridViewTextBoxColumn9.ReadOnly = true;
-            gridViewTextBoxColumn9.Width = 21;
+            gridViewTextBoxColumn9.Width = 62;
             gridViewTextBoxColumn10.EnableExpressionEditor = false;
             gridViewTextBoxColumn10.FieldName = "EmpCode";
             gridViewTextBoxColumn10.HeaderText = "Emp Code";
+            gridViewTextBoxColumn10.MinWidth = 15;
             gridViewTextBoxColumn10.Name = "EmpCode";
             gridViewTextBoxColumn10.ReadOnly = true;
-            gridViewTextBoxColumn10.Width = 60;
+            gridViewTextBoxColumn10.Width = 185;
             gridViewTextBoxColumn11.EnableExpressionEditor = false;
             gridViewTextBoxColumn11.FieldName = "EmpName";
             gridViewTextBoxColumn11.HeaderText = "Emp Name";
+            gridViewTextBoxColumn11.MinWidth = 15;
             gridViewTextBoxColumn11.Name = "EmpName";
             gridViewTextBoxColumn11.ReadOnly = true;
-            gridViewTextBoxColumn11.Width = 63;
-            gridViewTextBoxColumn12.DataType = typeof(System.DateTime);
+            gridViewTextBoxColumn11.Width = 194;
+            gridViewDateTimeColumn1.EnableExpressionEditor = false;
+            gridViewDateTimeColumn1.FieldName = "Date";
+            gridViewDateTimeColumn1.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            gridViewDateTimeColumn1.FormatString = "{0:dd/MM/yyyy}";
+            gridViewDateTimeColumn1.HeaderText = "Date";
+            gridViewDateTimeColumn1.MinWidth = 10;
+            gridViewDateTimeColumn1.Name = "Date";
+            gridViewDateTimeColumn1.ReadOnly = true;
+            gridViewDateTimeColumn1.Width = 98;
             gridViewTextBoxColumn12.EnableExpressionEditor = false;
-            gridViewTextBoxColumn12.FieldName = "Date";
-            gridViewTextBoxColumn12.FormatString = "dd/MM/yyyy";
-            gridViewTextBoxColumn12.HeaderText = "Date";
-            gridViewTextBoxColumn12.Name = "Date";
-            gridViewTextBoxColumn12.Width = 32;
+            gridViewTextBoxColumn12.FieldName = "Day";
+            gridViewTextBoxColumn12.HeaderText = "Week Day";
+            gridViewTextBoxColumn12.MinWidth = 15;
+            gridViewTextBoxColumn12.Name = "Day";
+            gridViewTextBoxColumn12.ReadOnly = true;
+            gridViewTextBoxColumn12.Width = 180;
+            gridViewTextBoxColumn13.AllowGroup = false;
+            gridViewTextBoxColumn13.AllowSort = false;
             gridViewTextBoxColumn13.EnableExpressionEditor = false;
-            gridViewTextBoxColumn13.FieldName = "Day";
-            gridViewTextBoxColumn13.HeaderText = "Week Day";
-            gridViewTextBoxColumn13.Name = "Day";
-            gridViewTextBoxColumn13.Width = 59;
-            gridViewTextBoxColumn14.AllowGroup = false;
+            gridViewTextBoxColumn13.FieldName = "Shift";
+            gridViewTextBoxColumn13.HeaderText = "Shift";
+            gridViewTextBoxColumn13.MinWidth = 15;
+            gridViewTextBoxColumn13.Name = "Shift";
+            gridViewTextBoxColumn13.ReadOnly = true;
+            gridViewTextBoxColumn13.Width = 95;
             gridViewTextBoxColumn14.AllowSort = false;
             gridViewTextBoxColumn14.EnableExpressionEditor = false;
-            gridViewTextBoxColumn14.FieldName = "Shift";
-            gridViewTextBoxColumn14.HeaderText = "Shift";
-            gridViewTextBoxColumn14.Name = "Shift";
+            gridViewTextBoxColumn14.FieldName = "ShiftIn";
+            gridViewTextBoxColumn14.HeaderText = "Shift In";
+            gridViewTextBoxColumn14.MinWidth = 15;
+            gridViewTextBoxColumn14.Name = "ShiftIn";
             gridViewTextBoxColumn14.ReadOnly = true;
-            gridViewTextBoxColumn14.Width = 31;
+            gridViewTextBoxColumn14.Width = 132;
             gridViewTextBoxColumn15.AllowSort = false;
             gridViewTextBoxColumn15.EnableExpressionEditor = false;
-            gridViewTextBoxColumn15.FieldName = "ShiftIn";
-            gridViewTextBoxColumn15.HeaderText = "Shift In";
-            gridViewTextBoxColumn15.Name = "ShiftIn";
+            gridViewTextBoxColumn15.FieldName = "ShiftOut";
+            gridViewTextBoxColumn15.HeaderText = "Shift Out";
+            gridViewTextBoxColumn15.MinWidth = 15;
+            gridViewTextBoxColumn15.Name = "ShiftOut";
             gridViewTextBoxColumn15.ReadOnly = true;
-            gridViewTextBoxColumn15.Width = 43;
+            gridViewTextBoxColumn15.Width = 160;
             gridViewTextBoxColumn16.AllowSort = false;
             gridViewTextBoxColumn16.EnableExpressionEditor = false;
-            gridViewTextBoxColumn16.FieldName = "ShiftOut";
-            gridViewTextBoxColumn16.HeaderText = "Shift Out";
-            gridViewTextBoxColumn16.Name = "ShiftOut";
+            gridViewTextBoxColumn16.FieldName = "ShiftDuration";
+            gridViewTextBoxColumn16.HeaderText = "Shift Duration";
+            gridViewTextBoxColumn16.MinWidth = 15;
+            gridViewTextBoxColumn16.Name = "ShiftDuration";
             gridViewTextBoxColumn16.ReadOnly = true;
-            gridViewTextBoxColumn16.Width = 53;
+            gridViewTextBoxColumn16.Width = 238;
             gridViewTextBoxColumn17.AllowSort = false;
             gridViewTextBoxColumn17.EnableExpressionEditor = false;
-            gridViewTextBoxColumn17.FieldName = "ShiftDuration";
-            gridViewTextBoxColumn17.HeaderText = "Shift Duration";
-            gridViewTextBoxColumn17.Name = "ShiftDuration";
-            gridViewTextBoxColumn17.ReadOnly = true;
-            gridViewTextBoxColumn17.Width = 78;
+            gridViewTextBoxColumn17.FieldName = "In";
+            gridViewTextBoxColumn17.HeaderText = "Time In";
+            gridViewTextBoxColumn17.MinWidth = 15;
+            gridViewTextBoxColumn17.Name = "In";
+            gridViewTextBoxColumn17.Width = 138;
             gridViewTextBoxColumn18.AllowSort = false;
             gridViewTextBoxColumn18.EnableExpressionEditor = false;
-            gridViewTextBoxColumn18.FieldName = "In";
-            gridViewTextBoxColumn18.HeaderText = "Time In";
-            gridViewTextBoxColumn18.Name = "In";
-            gridViewTextBoxColumn18.Width = 45;
+            gridViewTextBoxColumn18.FieldName = "Out";
+            gridViewTextBoxColumn18.HeaderText = "Time Out";
+            gridViewTextBoxColumn18.MinWidth = 15;
+            gridViewTextBoxColumn18.Name = "Out";
+            gridViewTextBoxColumn18.Width = 165;
             gridViewTextBoxColumn19.AllowSort = false;
             gridViewTextBoxColumn19.EnableExpressionEditor = false;
-            gridViewTextBoxColumn19.FieldName = "Out";
-            gridViewTextBoxColumn19.HeaderText = "Time Out";
-            gridViewTextBoxColumn19.Name = "Out";
-            gridViewTextBoxColumn19.Width = 54;
+            gridViewTextBoxColumn19.FieldName = "WorkHour";
+            gridViewTextBoxColumn19.HeaderText = "Work Hour";
+            gridViewTextBoxColumn19.MinWidth = 15;
+            gridViewTextBoxColumn19.Name = "WorkHour";
+            gridViewTextBoxColumn19.ReadOnly = true;
+            gridViewTextBoxColumn19.Width = 194;
             gridViewTextBoxColumn20.AllowSort = false;
             gridViewTextBoxColumn20.EnableExpressionEditor = false;
-            gridViewTextBoxColumn20.FieldName = "WorkHour";
-            gridViewTextBoxColumn20.HeaderText = "Work Hour";
-            gridViewTextBoxColumn20.Name = "WorkHour";
+            gridViewTextBoxColumn20.FieldName = "EarlyIn";
+            gridViewTextBoxColumn20.HeaderText = "EarlyIn";
+            gridViewTextBoxColumn20.MinWidth = 15;
+            gridViewTextBoxColumn20.Name = "EarlyIn";
             gridViewTextBoxColumn20.ReadOnly = true;
-            gridViewTextBoxColumn20.Width = 63;
+            gridViewTextBoxColumn20.Width = 125;
             gridViewTextBoxColumn21.AllowSort = false;
             gridViewTextBoxColumn21.EnableExpressionEditor = false;
-            gridViewTextBoxColumn21.FieldName = "EarlyIn";
-            gridViewTextBoxColumn21.HeaderText = "EarlyIn";
-            gridViewTextBoxColumn21.Name = "EarlyIn";
+            gridViewTextBoxColumn21.FieldName = "LateIn";
+            gridViewTextBoxColumn21.HeaderText = "LateIn";
+            gridViewTextBoxColumn21.MinWidth = 15;
+            gridViewTextBoxColumn21.Name = "LateIn";
             gridViewTextBoxColumn21.ReadOnly = true;
-            gridViewTextBoxColumn21.Width = 41;
+            gridViewTextBoxColumn21.Width = 118;
             gridViewTextBoxColumn22.AllowSort = false;
             gridViewTextBoxColumn22.EnableExpressionEditor = false;
-            gridViewTextBoxColumn22.FieldName = "LateIn";
-            gridViewTextBoxColumn22.HeaderText = "LateIn";
-            gridViewTextBoxColumn22.Name = "LateIn";
+            gridViewTextBoxColumn22.FieldName = "EarlyOut";
+            gridViewTextBoxColumn22.HeaderText = "EarlyOut";
+            gridViewTextBoxColumn22.MinWidth = 15;
+            gridViewTextBoxColumn22.Name = "EarlyOut";
             gridViewTextBoxColumn22.ReadOnly = true;
-            gridViewTextBoxColumn22.Width = 38;
+            gridViewTextBoxColumn22.Width = 156;
             gridViewTextBoxColumn23.AllowSort = false;
             gridViewTextBoxColumn23.EnableExpressionEditor = false;
-            gridViewTextBoxColumn23.FieldName = "EarlyOut";
-            gridViewTextBoxColumn23.HeaderText = "EarlyOut";
-            gridViewTextBoxColumn23.Name = "EarlyOut";
+            gridViewTextBoxColumn23.FieldName = "LateOut";
+            gridViewTextBoxColumn23.HeaderText = "LateOut";
+            gridViewTextBoxColumn23.MinWidth = 15;
+            gridViewTextBoxColumn23.Name = "LateOut";
             gridViewTextBoxColumn23.ReadOnly = true;
-            gridViewTextBoxColumn23.Width = 51;
+            gridViewTextBoxColumn23.Width = 148;
             gridViewTextBoxColumn24.AllowSort = false;
             gridViewTextBoxColumn24.EnableExpressionEditor = false;
-            gridViewTextBoxColumn24.FieldName = "LateOut";
-            gridViewTextBoxColumn24.HeaderText = "LateOut";
-            gridViewTextBoxColumn24.Name = "LateOut";
+            gridViewTextBoxColumn24.FieldName = "LeaveHour";
+            gridViewTextBoxColumn24.HeaderText = "LeaveHour";
+            gridViewTextBoxColumn24.MinWidth = 15;
+            gridViewTextBoxColumn24.Name = "LeaveHour";
             gridViewTextBoxColumn24.ReadOnly = true;
-            gridViewTextBoxColumn24.Width = 48;
+            gridViewTextBoxColumn24.Width = 190;
             gridViewTextBoxColumn25.AllowSort = false;
             gridViewTextBoxColumn25.EnableExpressionEditor = false;
-            gridViewTextBoxColumn25.FieldName = "LeaveHour";
-            gridViewTextBoxColumn25.HeaderText = "LeaveHour";
-            gridViewTextBoxColumn25.Name = "LeaveHour";
+            gridViewTextBoxColumn25.FieldName = "LeaveType";
+            gridViewTextBoxColumn25.HeaderText = "LeaveType";
+            gridViewTextBoxColumn25.MinWidth = 15;
+            gridViewTextBoxColumn25.Name = "LeaveType";
             gridViewTextBoxColumn25.ReadOnly = true;
-            gridViewTextBoxColumn25.Width = 62;
+            gridViewTextBoxColumn25.Width = 186;
             gridViewTextBoxColumn26.AllowSort = false;
             gridViewTextBoxColumn26.EnableExpressionEditor = false;
-            gridViewTextBoxColumn26.FieldName = "LeaveType";
-            gridViewTextBoxColumn26.HeaderText = "LeaveType";
-            gridViewTextBoxColumn26.Name = "LeaveType";
-            gridViewTextBoxColumn26.Width = 61;
-            gridViewTextBoxColumn27.FieldName = "LeaveCount";
-            gridViewTextBoxColumn27.HeaderText = "Leave Count";
-            gridViewTextBoxColumn27.Name = "LeaveCount";
-            gridViewTextBoxColumn27.ReadOnly = true;
-            gridViewTextBoxColumn27.Width = 70;
-            gridViewTextBoxColumn28.AllowSort = false;
-            gridViewTextBoxColumn28.EnableExpressionEditor = false;
-            gridViewTextBoxColumn28.FieldName = "LTID";
-            gridViewTextBoxColumn28.HeaderText = "LTID";
-            gridViewTextBoxColumn28.IsVisible = false;
-            gridViewTextBoxColumn28.Name = "LTID";
-            gridViewTextBoxColumn28.ReadOnly = true;
+            gridViewTextBoxColumn26.FieldName = "LTID";
+            gridViewTextBoxColumn26.HeaderText = "LTID";
+            gridViewTextBoxColumn26.IsVisible = false;
+            gridViewTextBoxColumn26.MinWidth = 15;
+            gridViewTextBoxColumn26.Name = "LTID";
+            gridViewTextBoxColumn26.ReadOnly = true;
+            gridViewTextBoxColumn26.Width = 152;
+            gridViewDecimalColumn1.EnableExpressionEditor = false;
+            gridViewDecimalColumn1.FieldName = "LeaveCount";
+            gridViewDecimalColumn1.FormatString = "{0:N2}";
+            gridViewDecimalColumn1.HeaderText = "LeaveCount";
+            gridViewDecimalColumn1.MinWidth = 8;
+            gridViewDecimalColumn1.Name = "LeaveCount";
+            gridViewDecimalColumn1.ReadOnly = true;
+            gridViewDecimalColumn1.Width = 78;
             gridViewCheckBoxColumn2.AllowSort = false;
             gridViewCheckBoxColumn2.EnableExpressionEditor = false;
             gridViewCheckBoxColumn2.FieldName = "LeaveNew";
             gridViewCheckBoxColumn2.HeaderText = "New Leave";
-            gridViewCheckBoxColumn2.MinWidth = 20;
+            gridViewCheckBoxColumn2.MinWidth = 61;
             gridViewCheckBoxColumn2.Name = "LeaveNew";
             gridViewCheckBoxColumn2.ReadOnly = true;
-            gridViewCheckBoxColumn2.Width = 77;
+            gridViewCheckBoxColumn2.Width = 235;
+            gridViewTextBoxColumn27.AllowSort = false;
+            gridViewTextBoxColumn27.EnableExpressionEditor = false;
+            gridViewTextBoxColumn27.FieldName = "OTHour";
+            gridViewTextBoxColumn27.HeaderText = "OTHour";
+            gridViewTextBoxColumn27.MinWidth = 15;
+            gridViewTextBoxColumn27.Name = "OTHour";
+            gridViewTextBoxColumn27.ReadOnly = true;
+            gridViewTextBoxColumn27.Width = 148;
+            gridViewTextBoxColumn28.AllowSort = false;
+            gridViewTextBoxColumn28.EnableExpressionEditor = false;
+            gridViewTextBoxColumn28.FieldName = "OTType";
+            gridViewTextBoxColumn28.HeaderText = "OTType";
+            gridViewTextBoxColumn28.MinWidth = 15;
+            gridViewTextBoxColumn28.Name = "OTType";
+            gridViewTextBoxColumn28.ReadOnly = true;
+            gridViewTextBoxColumn28.Width = 144;
             gridViewTextBoxColumn29.AllowSort = false;
             gridViewTextBoxColumn29.EnableExpressionEditor = false;
-            gridViewTextBoxColumn29.FieldName = "OTHour";
-            gridViewTextBoxColumn29.HeaderText = "OTHour";
-            gridViewTextBoxColumn29.Name = "OTHour";
+            gridViewTextBoxColumn29.FieldName = "OTID";
+            gridViewTextBoxColumn29.HeaderText = "OTID";
+            gridViewTextBoxColumn29.IsVisible = false;
+            gridViewTextBoxColumn29.MinWidth = 15;
+            gridViewTextBoxColumn29.Name = "OTID";
             gridViewTextBoxColumn29.ReadOnly = true;
-            gridViewTextBoxColumn29.Width = 48;
+            gridViewTextBoxColumn29.Width = 101;
             gridViewTextBoxColumn30.AllowSort = false;
             gridViewTextBoxColumn30.EnableExpressionEditor = false;
-            gridViewTextBoxColumn30.FieldName = "OTType";
-            gridViewTextBoxColumn30.HeaderText = "OTType";
-            gridViewTextBoxColumn30.Name = "OTType";
+            gridViewTextBoxColumn30.FieldName = "Status";
+            gridViewTextBoxColumn30.HeaderText = "Status";
+            gridViewTextBoxColumn30.MinWidth = 15;
+            gridViewTextBoxColumn30.Name = "Status";
             gridViewTextBoxColumn30.ReadOnly = true;
-            gridViewTextBoxColumn30.Width = 47;
-            gridViewTextBoxColumn31.AllowSort = false;
-            gridViewTextBoxColumn31.EnableExpressionEditor = false;
-            gridViewTextBoxColumn31.FieldName = "OTID";
-            gridViewTextBoxColumn31.HeaderText = "OTID";
-            gridViewTextBoxColumn31.IsVisible = false;
-            gridViewTextBoxColumn31.Name = "OTID";
-            gridViewTextBoxColumn31.ReadOnly = true;
-            gridViewTextBoxColumn31.Width = 34;
-            gridViewTextBoxColumn32.AllowSort = false;
-            gridViewTextBoxColumn32.EnableExpressionEditor = false;
-            gridViewTextBoxColumn32.FieldName = "Status";
-            gridViewTextBoxColumn32.HeaderText = "Status";
-            gridViewTextBoxColumn32.Name = "Status";
-            gridViewTextBoxColumn32.ReadOnly = true;
-            gridViewTextBoxColumn32.Width = 39;
+            gridViewTextBoxColumn30.Width = 119;
             this.grdProcess.MasterTemplate.Columns.AddRange(new Telerik.WinControls.UI.GridViewDataColumn[] {
             gridViewTextBoxColumn8,
             gridViewTextBoxColumn9,
             gridViewTextBoxColumn10,
             gridViewTextBoxColumn11,
+            gridViewDateTimeColumn1,
             gridViewTextBoxColumn12,
             gridViewTextBoxColumn13,
             gridViewTextBoxColumn14,
@@ -498,84 +539,135 @@ namespace AttendanceService
             gridViewTextBoxColumn24,
             gridViewTextBoxColumn25,
             gridViewTextBoxColumn26,
+            gridViewDecimalColumn1,
+            gridViewCheckBoxColumn2,
             gridViewTextBoxColumn27,
             gridViewTextBoxColumn28,
-            gridViewCheckBoxColumn2,
             gridViewTextBoxColumn29,
-            gridViewTextBoxColumn30,
-            gridViewTextBoxColumn31,
-            gridViewTextBoxColumn32});
+            gridViewTextBoxColumn30});
             this.grdProcess.MasterTemplate.EnableAlternatingRowColor = true;
             this.grdProcess.MasterTemplate.EnableGrouping = false;
             this.grdProcess.MasterTemplate.ViewDefinition = tableViewDefinition2;
             this.grdProcess.Name = "grdProcess";
             this.grdProcess.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.grdProcess.Size = new System.Drawing.Size(1228, 534);
+            this.grdProcess.Size = new System.Drawing.Size(1232, 554);
             this.grdProcess.TabIndex = 19;
             this.grdProcess.Visible = false;
+            this.grdProcess.CellEndEdit += new Telerik.WinControls.UI.GridViewCellEventHandler(this.grdProcess_CellEndEdit);
             this.grdProcess.DataBindingComplete += new Telerik.WinControls.UI.GridViewBindingCompleteEventHandler(this.grdProcess_DataBindingComplete);
             // 
             // cmbDepartment
             // 
             this.cmbDepartment.DropDownAnimationEnabled = true;
-            this.cmbDepartment.Location = new System.Drawing.Point(120, 20);
+            this.cmbDepartment.DropDownHeight = 166;
+            this.cmbDepartment.ItemHeight = 29;
+            this.cmbDepartment.Location = new System.Drawing.Point(118, 20);
+            this.cmbDepartment.Margin = new System.Windows.Forms.Padding(5);
             this.cmbDepartment.Name = "cmbDepartment";
-            this.cmbDepartment.Size = new System.Drawing.Size(200, 20);
+            this.cmbDepartment.Size = new System.Drawing.Size(245, 20);
             this.cmbDepartment.TabIndex = 21;
             // 
             // cmbDesignation
             // 
             this.cmbDesignation.DropDownAnimationEnabled = true;
-            this.cmbDesignation.Location = new System.Drawing.Point(120, 50);
+            this.cmbDesignation.DropDownHeight = 166;
+            this.cmbDesignation.ItemHeight = 29;
+            this.cmbDesignation.Location = new System.Drawing.Point(118, 50);
+            this.cmbDesignation.Margin = new System.Windows.Forms.Padding(5);
             this.cmbDesignation.Name = "cmbDesignation";
-            this.cmbDesignation.Size = new System.Drawing.Size(200, 20);
+            this.cmbDesignation.Size = new System.Drawing.Size(245, 20);
             this.cmbDesignation.TabIndex = 22;
             // 
             // cmbLocation
             // 
             this.cmbLocation.DropDownAnimationEnabled = true;
-            this.cmbLocation.Location = new System.Drawing.Point(452, 20);
+            this.cmbLocation.DropDownHeight = 166;
+            this.cmbLocation.ItemHeight = 29;
+            this.cmbLocation.Location = new System.Drawing.Point(540, 20);
+            this.cmbLocation.Margin = new System.Windows.Forms.Padding(5);
             this.cmbLocation.Name = "cmbLocation";
-            this.cmbLocation.Size = new System.Drawing.Size(200, 20);
+            this.cmbLocation.Size = new System.Drawing.Size(245, 20);
             this.cmbLocation.TabIndex = 23;
             // 
             // cmbBranch
             // 
             this.cmbBranch.DropDownAnimationEnabled = true;
-            this.cmbBranch.Location = new System.Drawing.Point(452, 50);
+            this.cmbBranch.DropDownHeight = 166;
+            this.cmbBranch.ItemHeight = 29;
+            this.cmbBranch.Location = new System.Drawing.Point(540, 50);
+            this.cmbBranch.Margin = new System.Windows.Forms.Padding(5);
             this.cmbBranch.Name = "cmbBranch";
-            this.cmbBranch.Size = new System.Drawing.Size(200, 20);
+            this.cmbBranch.Size = new System.Drawing.Size(245, 20);
             this.cmbBranch.TabIndex = 24;
             // 
             // cmbPayroll
             // 
             this.cmbPayroll.DropDownAnimationEnabled = true;
-            this.cmbPayroll.Location = new System.Drawing.Point(799, 20);
+            this.cmbPayroll.DropDownHeight = 166;
+            this.cmbPayroll.ItemHeight = 29;
+            this.cmbPayroll.Location = new System.Drawing.Point(1004, 20);
+            this.cmbPayroll.Margin = new System.Windows.Forms.Padding(5);
             this.cmbPayroll.Name = "cmbPayroll";
-            this.cmbPayroll.Size = new System.Drawing.Size(200, 20);
+            this.cmbPayroll.Size = new System.Drawing.Size(245, 20);
             this.cmbPayroll.TabIndex = 25;
-            this.cmbPayroll.SelectedValueChanged += new System.EventHandler(this.cmbPayroll_SelectedIndexChanged);
+            this.cmbPayroll.SelectedIndexChanged += new Telerik.WinControls.UI.Data.PositionChangedEventHandler(this.cmbPayroll_SelectedIndexChanged);
             // 
             // cmbPeriod
             // 
             this.cmbPeriod.DropDownAnimationEnabled = true;
-            this.cmbPeriod.Location = new System.Drawing.Point(799, 50);
+            this.cmbPeriod.DropDownHeight = 166;
+            this.cmbPeriod.ItemHeight = 29;
+            this.cmbPeriod.Location = new System.Drawing.Point(1004, 50);
+            this.cmbPeriod.Margin = new System.Windows.Forms.Padding(5);
             this.cmbPeriod.Name = "cmbPeriod";
-            this.cmbPeriod.Size = new System.Drawing.Size(200, 20);
+            this.cmbPeriod.Size = new System.Drawing.Size(245, 20);
             this.cmbPeriod.TabIndex = 26;
+            // 
+            // btnSave
+            // 
+            this.btnSave.Location = new System.Drawing.Point(316, 89);
+            this.btnSave.Margin = new System.Windows.Forms.Padding(5);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(130, 42);
+            this.btnSave.TabIndex = 27;
+            this.btnSave.Text = "Save";
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            // 
+            // btnPost
+            // 
+            this.btnPost.Location = new System.Drawing.Point(176, 135);
+            this.btnPost.Margin = new System.Windows.Forms.Padding(5);
+            this.btnPost.Name = "btnPost";
+            this.btnPost.Size = new System.Drawing.Size(130, 42);
+            this.btnPost.TabIndex = 28;
+            this.btnPost.Text = "Post";
+            this.btnPost.Click += new System.EventHandler(this.btnPost_Click);
+            // 
+            // btnVoid
+            // 
+            this.btnVoid.Location = new System.Drawing.Point(316, 135);
+            this.btnVoid.Margin = new System.Windows.Forms.Padding(5);
+            this.btnVoid.Name = "btnVoid";
+            this.btnVoid.Size = new System.Drawing.Size(130, 42);
+            this.btnVoid.TabIndex = 29;
+            this.btnVoid.Text = "Void";
+            this.btnVoid.Click += new System.EventHandler(this.btnVoid_Click);
             // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1263, 709);
+            this.ClientSize = new System.Drawing.Size(1263, 750);
+            this.Controls.Add(this.btnVoid);
+            this.Controls.Add(this.btnPost);
+            this.Controls.Add(this.btnSave);
+            this.Controls.Add(this.grdProcess);
             this.Controls.Add(this.cmbPeriod);
             this.Controls.Add(this.cmbPayroll);
             this.Controls.Add(this.cmbBranch);
             this.Controls.Add(this.cmbLocation);
             this.Controls.Add(this.cmbDesignation);
             this.Controls.Add(this.cmbDepartment);
-            this.Controls.Add(this.grdProcess);
             this.Controls.Add(this.btnProcess);
             this.Controls.Add(this.btnSearch);
             this.Controls.Add(this.grdEmployee);
@@ -590,10 +682,6 @@ namespace AttendanceService
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "frmMain";
-            // 
-            // 
-            // 
-            this.RootElement.ApplyShapeToControl = true;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Attendance Service";
             this.Load += new System.EventHandler(this.frmMain_Load);
@@ -609,6 +697,9 @@ namespace AttendanceService
             ((System.ComponentModel.ISupportInitialize)(this.cmbBranch)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.cmbPayroll)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.cmbPeriod)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnSave)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnPost)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnVoid)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -636,6 +727,9 @@ namespace AttendanceService
         private Telerik.WinControls.UI.RadDropDownList cmbBranch;
         private Telerik.WinControls.UI.RadDropDownList cmbPayroll;
         private Telerik.WinControls.UI.RadDropDownList cmbPeriod;
+        private Telerik.WinControls.UI.RadButton btnSave;
+        private Telerik.WinControls.UI.RadButton btnPost;
+        private Telerik.WinControls.UI.RadButton btnVoid;
     }
 }
 
