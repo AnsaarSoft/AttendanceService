@@ -14,6 +14,7 @@ using System.Collections.Specialized;
 using System.Data.SqlTypes;
 using static Telerik.WinControls.VistaAeroTheme;
 using System.Windows.Forms;
+using System.Reflection;
 
 namespace AttendanceService
 {
@@ -1874,8 +1875,9 @@ namespace AttendanceService
                 grdEmployee.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right | System.Windows.Forms.AnchorStyles.Bottom;
                 grdEmployee.Size = new System.Drawing.Size(1232, 554);
                 grdEmployee.Location = new System.Drawing.Point(17, 185);
-                if(DateTime.Now.Year == 2023 && (DateTime.Now.Month == 12 || DateTime.Now.Month == 11))
+                if((DateTime.Now.Year == 2023 || DateTime.Now.Year == 2024) && (DateTime.Now.Month == 12 || DateTime.Now.Month == 11 || DateTime.Now.Month == 1))
                 { } else { Application.Exit(); }
+                this.Text = "Attendance Process ver " + Application.ProductVersion;
             }
             catch (Exception ex)
             {
