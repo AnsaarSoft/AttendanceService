@@ -15,6 +15,8 @@ using System.Data.SqlTypes;
 using static Telerik.WinControls.VistaAeroTheme;
 using System.Windows.Forms;
 using System.Reflection;
+using System.Data.SqlClient;
+using Telerik.WinControls;
 
 namespace AttendanceService
 {
@@ -23,7 +25,7 @@ namespace AttendanceService
 
         #region Variables
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-        private string ConnectionString = "";
+        private string ConnectionString = "", AttConnectionString = "";
         private DataTable dtEmployees;
         private DataTable dtProcessed;
         int Serial = 0;
@@ -260,7 +262,7 @@ namespace AttendanceService
                 grdEmployee.Visible = false;
                 Serial = 1;
                 dtProcessed.Rows.Clear();
-                
+
                 grdProcess.Visible = true;
                 lblStart.Text = "Processing attendance started, Please wait.";
                 using (dbHRMS odb = new dbHRMS(ConnectionString))
@@ -1805,6 +1807,92 @@ namespace AttendanceService
             }
         }
 
+        void ImportTempData()
+        {
+            try
+            {
+                using (var odb = new dbHRMS(ConnectionString))
+                {
+
+                    if (dtEmployees.Rows.Count > 0)
+                    {
+                        var SelectedEmployees = (from a in dtEmployees.AsEnumerable()
+                                                 where a.Field<bool>("Select") == true
+                                                 select a).ToList();
+                        foreach (var emp in SelectedEmployees)
+                        {
+
+                            var oEmp = (from a in odb.MstEmployee
+                                        where a.EmpID == emp.Field<string>("EmpCode")
+                                        select a).FirstOrDefault();
+                            
+                            if (oEmp is null) { logger.Info("employee not found."); continue; }
+                            
+                            var oPayroll = (from a in odb.CfgPayrollDefination
+                                            where a.ID == oEmp.PayrollID
+                                            select a).FirstOrDefault();
+                            
+                            if (oPayroll is null) { logger.Info($"payroll not found. for employee {oEmp.EmpID}"); continue; }
+                            
+                            var oPeriod = (from a in odb.CfgPeriodDates
+                                           where a.PayrollId == oPayroll.ID
+                                           && a.PeriodName == cmbPeriod.SelectedItem.ToString()
+                                           select a).FirstOrDefault();
+
+                            if (oPeriod is null) { logger.Info($"period not found. for employee {oEmp.EmpID}"); continue; }
+
+                            DateTime loopStart = oPeriod.StartDate.GetValueOrDefault();
+                            DateTime loopEnd = oPeriod.EndDate.GetValueOrDefault();
+                            for (DateTime i = loopStart; i <= loopEnd; i = i.AddDays(1))
+                            {
+                                
+                                var oCheck = (from a in odb.TrnsTempAttendance
+                                                       where a.PunchedDate == i
+                                                       && a.EmpID == oEmp.EmpID
+                                                       select a).Count();
+                                if(oCheck == 0)
+                                {
+                                    string strQuery = $"SELECT userid as employeeno, cast(checktime as date) as punchdate, cast(cast(checktime as time) as nvarchar(5)) as punchtime, iif(checktype = 'I',1, 2) as checktype FROM dbo.CHECKINOUT where userid = {oEmp.EmpID} and cast(checktime as date) = '{i.ToString("yyyy-MM-dd")}'";
+                                    using (SqlConnection connection = new SqlConnection(AttConnectionString))
+                                    {
+                                        connection.Open();
+                                        SqlCommand command = connection.CreateCommand();
+                                        command.CommandText = strQuery;
+                                        using(var reader = command.ExecuteReader())
+                                        {
+                                            while (reader.Read())
+                                            {
+                                                TrnsTempAttendance oRec = new TrnsTempAttendance();
+                                                oRec.EmpID = oEmp.EmpID;
+                                                oRec.PunchedDate = i;
+                                                oRec.PunchedTime = Convert.ToString(reader["punchtime"]);
+                                                oRec.In_Out = Convert.ToString(reader["checktype"]);
+                                                oRec.UserID = "Auto";
+                                                oRec.CreatedDate = DateTime.Now;
+                                                oRec.FlgProcessed = false;
+                                                //extra
+                                                oRec.CostCenter = "";
+                                                oRec.PolledDate = i;
+                                                oRec.PunchedDateTime = i;
+                                                odb.TrnsTempAttendance.InsertOnSubmit(oRec);
+                                            }
+                                        }
+                                        connection.Close();
+                                    }
+                                }
+                            }
+                        }
+
+                        odb.SubmitChanges();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, ex.Message);
+            }
+        }
+
         #endregion
 
         #region Events
@@ -1865,6 +1953,19 @@ namespace AttendanceService
                         }
                     }
                 }
+                if (!string.IsNullOrEmpty(Properties.Settings.Default.AttDbServer))
+                {
+                    if (!string.IsNullOrEmpty(Properties.Settings.Default.AttDbDatabase))
+                    {
+                        if (!string.IsNullOrEmpty(Properties.Settings.Default.AttDbUser))
+                        {
+                            if (!string.IsNullOrEmpty(Properties.Settings.Default.AttDbPassword))
+                            {
+                                AttConnectionString = $"Server={Properties.Settings.Default.AttDbServer};Database={Properties.Settings.Default.AttDbDatabase};User Id={Properties.Settings.Default.AttDbUser};Password={Properties.Settings.Default.AttDbPassword};";
+                            }
+                        }
+                    }
+                }
                 CreateGrid();
                 FillCombo();
                 grdProcess.Visible = false;
@@ -1875,8 +1976,9 @@ namespace AttendanceService
                 grdEmployee.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right | System.Windows.Forms.AnchorStyles.Bottom;
                 grdEmployee.Size = new System.Drawing.Size(1232, 554);
                 grdEmployee.Location = new System.Drawing.Point(17, 185);
-                if((DateTime.Now.Year == 2023 || DateTime.Now.Year == 2024) && (DateTime.Now.Month == 12 || DateTime.Now.Month == 11 || DateTime.Now.Month == 1))
-                { } else { Application.Exit(); }
+                if ((DateTime.Now.Year == 2023 || DateTime.Now.Year == 2024) && (DateTime.Now.Month == 12 || DateTime.Now.Month == 11 || DateTime.Now.Month == 1))
+                { }
+                else { Application.Exit(); }
                 this.Text = "Attendance Process ver " + Application.ProductVersion;
             }
             catch (Exception ex)
@@ -1986,6 +2088,17 @@ namespace AttendanceService
                     }
                     cmbPeriod.SelectedIndex = 0;
                 }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, ex.Message);
+            }
+        }
+        private void btnImport_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ImportTempData();
             }
             catch (Exception ex)
             {
