@@ -29,6 +29,7 @@ namespace AttendanceService
         private DataTable dtEmployees;
         private DataTable dtProcessed;
         int Serial = 0;
+        private bool GridOneToggle = false;
         #endregion
 
         #region Functions
@@ -173,44 +174,50 @@ namespace AttendanceService
                 dtEmployees.Rows.Clear();
                 using (var odb = new dbHRMS(ConnectionString))
                 {
-                    string DepartmentValue, DesignationValue, LocationValue, BranchValue, PayrollValue;
+                    string DepartmentValue, DesignationValue, LocationValue, BranchValue, PayrollValue, FromEmp;
                     DepartmentValue = cmbDepartment.SelectedItem.ToString() == "All" ? string.Empty : cmbDepartment.SelectedItem.ToString();
                     DesignationValue = cmbDesignation.SelectedItem.ToString() == "All" ? string.Empty : cmbDesignation.SelectedItem.ToString();
                     LocationValue = cmbLocation.SelectedItem.ToString() == "All" ? string.Empty : cmbLocation.SelectedItem.ToString();
                     BranchValue = cmbBranch.SelectedItem.ToString() == "All" ? string.Empty : cmbBranch.SelectedItem.ToString();
                     PayrollValue = cmbPayroll.SelectedItem.ToString();
+                    FromEmp = (txtFromEmployeeCode.Text == "0" || string.IsNullOrEmpty(txtFromEmployeeCode.Text)) ? string.Empty: txtFromEmployeeCode.Text;
+                    
                     IEnumerable<MstEmployee> oCollection;
-                    if (string.IsNullOrEmpty(DepartmentValue) && string.IsNullOrEmpty(DesignationValue) && string.IsNullOrEmpty(LocationValue) && string.IsNullOrEmpty(BranchValue))
+                    if (string.IsNullOrEmpty(FromEmp) && string.IsNullOrEmpty(DepartmentValue) && string.IsNullOrEmpty(DesignationValue) && string.IsNullOrEmpty(LocationValue) && string.IsNullOrEmpty(BranchValue))
                     {
                         oCollection = (from a in odb.MstEmployee
                                        where a.FlgActive == true
+                                       && a.ResignDate == null
                                        && a.CfgPayrollDefination.PayrollName == PayrollValue
                                        orderby a.ID
                                        select a).ToList();
                     }
-                    else if (string.IsNullOrEmpty(DepartmentValue) && string.IsNullOrEmpty(DesignationValue) && string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
+                    else if (string.IsNullOrEmpty(FromEmp) && string.IsNullOrEmpty(DepartmentValue) && string.IsNullOrEmpty(DesignationValue) && string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
                     {
                         oCollection = (from a in odb.MstEmployee
                                        where a.FlgActive == true
+                                       && a.ResignDate == null
                                        && a.MstBranches.Name == BranchValue
                                        && a.CfgPayrollDefination.PayrollName == PayrollValue
                                        orderby a.ID
                                        select a).ToList();
                     }
-                    else if (string.IsNullOrEmpty(DepartmentValue) && string.IsNullOrEmpty(DesignationValue) && !string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
+                    else if (string.IsNullOrEmpty(FromEmp) && string.IsNullOrEmpty(DepartmentValue) && string.IsNullOrEmpty(DesignationValue) && !string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
                     {
                         oCollection = (from a in odb.MstEmployee
                                        where a.FlgActive == true
+                                       && a.ResignDate == null
                                        && a.MstLocation.Name == LocationValue
                                        && a.MstBranches.Name == BranchValue
                                        && a.CfgPayrollDefination.PayrollName == PayrollValue
                                        orderby a.ID
                                        select a).ToList();
                     }
-                    else if (string.IsNullOrEmpty(DepartmentValue) && !string.IsNullOrEmpty(DesignationValue) && !string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
+                    else if (string.IsNullOrEmpty(FromEmp) && string.IsNullOrEmpty(DepartmentValue) && !string.IsNullOrEmpty(DesignationValue) && !string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
                     {
                         oCollection = (from a in odb.MstEmployee
                                        where a.FlgActive == true
+                                       && a.ResignDate == null
                                        && a.MstDesignation.Name == DesignationValue
                                        && a.MstLocation.Name == LocationValue
                                        && a.MstBranches.Name == BranchValue
@@ -218,10 +225,11 @@ namespace AttendanceService
                                        orderby a.ID
                                        select a).ToList();
                     }
-                    else if (!string.IsNullOrEmpty(DepartmentValue) && !string.IsNullOrEmpty(DesignationValue) && !string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
+                    else if (string.IsNullOrEmpty(FromEmp) && !string.IsNullOrEmpty(DepartmentValue) && !string.IsNullOrEmpty(DesignationValue) && !string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
                     {
                         oCollection = (from a in odb.MstEmployee
                                        where a.FlgActive == true
+                                       && a.ResignDate == null
                                        && a.MstDepartment.DeptName == DepartmentValue
                                        && a.MstDesignation.Name == DesignationValue
                                        && a.MstLocation.Name == LocationValue
@@ -230,10 +238,21 @@ namespace AttendanceService
                                        orderby a.ID
                                        select a).ToList();
                     }
+                    else if (!string.IsNullOrEmpty(FromEmp))
+                    {
+                        oCollection = (from a in odb.MstEmployee
+                                       where a.FlgActive == true
+                                       && a.ResignDate == null
+                                       && a.CfgPayrollDefination.PayrollName == PayrollValue
+                                       && a.EmpID == FromEmp
+                                       orderby a.ID
+                                       select a).ToList();
+                    }
                     else
                     {
                         oCollection = (from a in odb.MstEmployee
                                        where a.FlgActive == true
+                                       && a.ResignDate == null
                                        && a.CfgPayrollDefination.PayrollName == PayrollValue
                                        orderby a.ID
                                        select a).ToList();
@@ -432,6 +451,7 @@ namespace AttendanceService
                                     TimeIn = (from a in odb.TrnsTempAttendance
                                               where (a.In_Out == "1" || a.In_Out == "01" || a.In_Out == "In")
                                               && a.PunchedDate == oAttendance.Date
+                                              && a.EmpID == oEmp.EmpID
                                               orderby a.ID ascending
                                               select a.PunchedTime).FirstOrDefault();
                                     if (string.IsNullOrEmpty(TimeIn))
@@ -446,6 +466,7 @@ namespace AttendanceService
                                     TimeOut = (from a in odb.TrnsTempAttendance
                                                where (a.In_Out == "2" || a.In_Out == "02" || a.In_Out == "Out")
                                                && a.PunchedDate == oAttendance.Date
+                                               && a.EmpID == oEmp.EmpID
                                                orderby a.ID descending
                                                select a.PunchedTime).FirstOrDefault();
                                     if (string.IsNullOrEmpty(TimeOut))
@@ -462,6 +483,7 @@ namespace AttendanceService
                                         TimeOut = (from a in odb.TrnsTempAttendance
                                                    where (a.In_Out == "2" || a.In_Out == "02" || a.In_Out == "Out")
                                                    && a.PunchedDate == oAttendance.Date.Value.AddDays(1)
+                                                   && a.EmpID == oEmp.EmpID
                                                    orderby a.ID ascending
                                                    select a.PunchedTime).FirstOrDefault();
                                         if (string.IsNullOrEmpty(TimeOut))
@@ -487,6 +509,7 @@ namespace AttendanceService
                                     TimeIn = (from a in odb.TrnsTempAttendance
                                               where (a.In_Out == "1" || a.In_Out == "01" || a.In_Out == "In")
                                               && a.PunchedDate == oAttendance.Date
+                                              && a.EmpID == oEmp.EmpID
                                               orderby a.ID ascending
                                               select a.PunchedTime).FirstOrDefault();
                                     if (string.IsNullOrEmpty(TimeIn))
@@ -501,6 +524,7 @@ namespace AttendanceService
                                     TimeOut = (from a in odb.TrnsTempAttendance
                                                where (a.In_Out == "2" || a.In_Out == "02" || a.In_Out == "Out")
                                                && a.PunchedDate == oAttendance.Date
+                                               && a.EmpID == oEmp.EmpID
                                                orderby a.ID descending
                                                select a.PunchedTime).FirstOrDefault();
                                     if (string.IsNullOrEmpty(TimeOut))
@@ -534,6 +558,7 @@ namespace AttendanceService
                                 TimeIn = (from a in odb.TrnsTempAttendance
                                           where (a.In_Out == "1" || a.In_Out == "01" || a.In_Out == "In")
                                           && a.PunchedDate == oAttendance.Date
+                                          && a.EmpID == oEmp.EmpID
                                           orderby a.ID ascending
                                           select a.PunchedTime).FirstOrDefault();
                                 if (string.IsNullOrEmpty(TimeIn))
@@ -548,6 +573,7 @@ namespace AttendanceService
                                 TimeOut = (from a in odb.TrnsTempAttendance
                                            where (a.In_Out == "2" || a.In_Out == "02" || a.In_Out == "Out")
                                            && a.PunchedDate == oAttendance.Date.Value.AddDays(1)
+                                           && a.EmpID == oEmp.EmpID
                                            orderby a.ID ascending
                                            select a.PunchedTime).FirstOrDefault();
                                 if (string.IsNullOrEmpty(TimeOut))
@@ -1806,7 +1832,6 @@ namespace AttendanceService
                 logger.Error(ex, ex.Message);
             }
         }
-
         void ImportTempData()
         {
             try
@@ -1852,7 +1877,10 @@ namespace AttendanceService
                                                        select a).Count();
                                 if(oCheck == 0)
                                 {
-                                    string strQuery = $"SELECT userid as employeeno, cast(checktime as date) as punchdate, cast(cast(checktime as time) as nvarchar(5)) as punchtime, iif(checktype = 'I',1, 2) as checktype FROM dbo.CHECKINOUT where userid = {oEmp.EmpID} and cast(checktime as date) = '{i.ToString("yyyy-MM-dd")}'";
+                                    string strQuery = $"" +
+                                        "SELECT b.BADGENUMBER AS EmployeeCode, CAST(a.CHECKTIME AS DATE) AS PunchedDate, CAST(CAST(a.CHECKTIME AS TIME) AS NVARCHAR(5)) AS PunchedTime, IIF(ISNULL(a.CHECKTYPE,'I')='I', 1,2) AS PunchedType " +
+                                        "FROM dbo.CHECKINOUT a  INNER JOIN dbo.USERINFO b ON b.USERID = a.USERID " +
+                                        $"WHERE b.BADGENUMBER = '{oEmp.EmpID}' AND CAST(a.CHECKTIME AS DATE) = '{i.ToString("yyyy-MM-dd")}'";
                                     using (SqlConnection connection = new SqlConnection(AttConnectionString))
                                     {
                                         connection.Open();
@@ -1865,8 +1893,8 @@ namespace AttendanceService
                                                 TrnsTempAttendance oRec = new TrnsTempAttendance();
                                                 oRec.EmpID = oEmp.EmpID;
                                                 oRec.PunchedDate = i;
-                                                oRec.PunchedTime = Convert.ToString(reader["punchtime"]);
-                                                oRec.In_Out = Convert.ToString(reader["checktype"]);
+                                                oRec.PunchedTime = Convert.ToString(reader["PunchedTime"]);
+                                                oRec.In_Out = Convert.ToString(reader["PunchedType"]);
                                                 oRec.UserID = "Auto";
                                                 oRec.CreatedDate = DateTime.Now;
                                                 oRec.FlgProcessed = false;
@@ -1885,6 +1913,32 @@ namespace AttendanceService
 
                         odb.SubmitChanges();
                     }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, ex.Message);
+            }
+        }
+        void GridToggle()
+        {
+            try
+            {
+                if(GridOneToggle)
+                {
+                    foreach(DataRow row in dtEmployees.Rows)
+                    {
+                        row[0] = !GridOneToggle;
+                    }
+                    GridOneToggle = false;
+                }
+                else
+                {
+                    foreach(DataRow row in dtEmployees.Rows)
+                    {
+                        row[0] = !GridOneToggle;
+                    }
+                    GridOneToggle = true;
                 }
             }
             catch (Exception ex)
@@ -2099,6 +2153,7 @@ namespace AttendanceService
             try
             {
                 ImportTempData();
+                lblStart.Text = "Data successfully imported for selected employees";
             }
             catch (Exception ex)
             {
@@ -2119,6 +2174,24 @@ namespace AttendanceService
                 logger.Error(ex, ex.Message);
             }
         }
+        private void grdEmployee_CellClick(object sender, GridViewCellEventArgs e)
+        {
+            try
+            {
+                if(e.RowIndex == -1)
+                {
+                    if (e.ColumnIndex == 0)
+                    {
+                        GridToggle();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, ex.Message);
+            }
+        }
+        
         #endregion
 
     }
