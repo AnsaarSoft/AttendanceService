@@ -1908,6 +1908,48 @@ namespace AttendanceService
                                         connection.Close();
                                     }
                                 }
+                                else
+                                {
+                                    string strDelQuery = $"DELETE FROM dbo.TrnsTempAttendance WHERE EmpID = '{oEmp.EmpID}' AND CAST(PunchedDateTime AS DATE) = '{i.ToString("yyyy-MM-dd")}'";
+                                    using (SqlConnection connection = new SqlConnection(ConnectionString))
+                                    {
+                                        connection.Open();
+                                        SqlCommand command = connection.CreateCommand();
+                                        command.CommandText = strDelQuery;
+                                        command.ExecuteNonQuery();
+                                        connection.Close();
+                                    }
+                                    string strQuery = $"" +
+                                        "SELECT b.BADGENUMBER AS EmployeeCode, CAST(a.CHECKTIME AS DATE) AS PunchedDate, CAST(CAST(a.CHECKTIME AS TIME) AS NVARCHAR(5)) AS PunchedTime, IIF(ISNULL(a.CHECKTYPE,'I')='I', 1,2) AS PunchedType " +
+                                        "FROM dbo.CHECKINOUT a  INNER JOIN dbo.USERINFO b ON b.USERID = a.USERID " +
+                                        $"WHERE b.BADGENUMBER = '{oEmp.EmpID}' AND CAST(a.CHECKTIME AS DATE) = '{i.ToString("yyyy-MM-dd")}'";
+                                    using (SqlConnection connection = new SqlConnection(AttConnectionString))
+                                    {
+                                        connection.Open();
+                                        SqlCommand command = connection.CreateCommand();
+                                        command.CommandText = strQuery;
+                                        using (var reader = command.ExecuteReader())
+                                        {
+                                            while (reader.Read())
+                                            {
+                                                TrnsTempAttendance oRec = new TrnsTempAttendance();
+                                                oRec.EmpID = oEmp.EmpID;
+                                                oRec.PunchedDate = i;
+                                                oRec.PunchedTime = Convert.ToString(reader["PunchedTime"]);
+                                                oRec.In_Out = Convert.ToString(reader["PunchedType"]);
+                                                oRec.UserID = "Auto";
+                                                oRec.CreatedDate = DateTime.Now;
+                                                oRec.FlgProcessed = false;
+                                                //extra
+                                                oRec.CostCenter = "";
+                                                oRec.PolledDate = i;
+                                                oRec.PunchedDateTime = i;
+                                                odb.TrnsTempAttendance.InsertOnSubmit(oRec);
+                                            }
+                                        }
+                                        connection.Close();
+                                    }
+                                }
                             }
                         }
 
