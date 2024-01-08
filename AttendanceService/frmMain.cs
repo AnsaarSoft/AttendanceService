@@ -385,8 +385,11 @@ namespace AttendanceService
             {
                 using (var odb = new dbHRMS(ConnectionString))
                 {
-                    DateTime loopStart = oPeriod.StartDate.GetValueOrDefault();
-                    DateTime loopEnd = oPeriod.EndDate.GetValueOrDefault();
+                    //DateTime loopStart = oPeriod.StartDate.GetValueOrDefault();
+                    DateTime loopStart = dtFrom.Value;
+                    //DateTime loopEnd = oPeriod.EndDate.GetValueOrDefault();
+                    DateTime loopEnd = dtTo.Value;
+                    int ShortLeave = 0;
                     for (DateTime i = loopStart; i <= loopEnd; i = i.AddDays(1))
                     {
                         if (i < oEmp.JoiningDate.GetValueOrDefault().Date)
@@ -635,7 +638,7 @@ namespace AttendanceService
                             #region Penalty & Leaves
 
                             //full day leave
-                            if (iTimeIn == 0 && iTimeOut == 0)
+                            if (iTimeIn == 0 && iTimeOut == 0 && iShiftDuration > 0)
                             {
                                 var LeaveCheck = (from a in odb.TrnsLeavesRequest
                                                   where a.LeaveFrom <= i && a.LeaveTo >= i
@@ -670,7 +673,7 @@ namespace AttendanceService
 
                             //if workhour and shift hour is ok
                             ////but not on shift time.
-                            if (iShiftDuration <= iWorkHour)
+                            if (iShiftDuration <= iWorkHour && iShiftDuration > 0)
                             {
                                 if ((flgLateIn && flgEarlyOut) || (!flgLateIn && flgEarlyOut) || (flgLateIn && !flgEarlyOut))
                                 {
@@ -716,18 +719,53 @@ namespace AttendanceService
                                                   where a.LeaveFrom <= i && a.LeaveTo >= i
                                                   && a.EmpID == oEmp.ID
                                                   select a).Count();
+                                string DeductionRule = CalculateDeductionRule(TimeConvert(TimeDiff));
+                                if(DeductionRule == "DR_01")
+                                {
+                                    ShortLeave++;
+                                }
                                 if (LeaveCheck == 0)
                                 {
-                                    var oLT = (from a in oLeaveBal
-                                               where a.Balance > 0
-                                               orderby a.Priority ascending
-                                               select a).FirstOrDefault();
-                                    flgNewLeave = true;
-                                    LeaveHour = TimeDiff;
-                                    LeaveType = oLT.LeaveType;
-                                    LeaveTypeID = oLT.ID;
-                                    LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
-                                    oLT.Balance -= 1;
+                                    //short leave working
+                                    if( ShortLeave % 2 == 0)
+                                    {
+                                        var oLT = (from a in oLeaveBal
+                                                   where a.Balance > 0
+                                                   orderby a.Priority ascending
+                                                   select a).FirstOrDefault();
+                                        flgNewLeave = true;
+                                        LeaveHour = TimeDiff;
+                                        LeaveType = oLT.LeaveType;
+                                        LeaveTypeID = oLT.ID;
+                                        LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                        oLT.Balance -= 1;
+                                    }
+                                    else if (DeductionRule == "DR_02")
+                                    {
+                                        var oLT = (from a in oLeaveBal
+                                                   where a.Balance > 0
+                                                   orderby a.Priority ascending
+                                                   select a).FirstOrDefault();
+                                        flgNewLeave = true;
+                                        LeaveHour = TimeDiff;
+                                        LeaveType = oLT.LeaveType;
+                                        LeaveTypeID = oLT.ID;
+                                        LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                        oLT.Balance -= 1;
+                                    }
+                                    else if (DeductionRule == "DR_03")
+                                    {
+                                        var oLT = (from a in oLeaveBal
+                                                   where a.Balance > 0
+                                                   orderby a.Priority ascending
+                                                   select a).FirstOrDefault();
+                                        flgNewLeave = true;
+                                        LeaveHour = TimeDiff;
+                                        LeaveType = oLT.LeaveType;
+                                        LeaveTypeID = oLT.ID;
+                                        LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                        oLT.Balance -= 1;
+                                    }
                                 }
                                 else
                                 {
@@ -840,15 +878,15 @@ namespace AttendanceService
                             TimeOut = oAttendance.TimeOut;
                             if (string.IsNullOrEmpty(oAttendance.TimeIn))
                             {
-                                TimeIn = oAttendance.TimeIn;
+                                TimeIn = string.Empty;
                             }
                             else
                             {
-                                TimeIn = string.Empty;
+                                TimeIn = oAttendance.TimeIn;
                             }
                             if (string.IsNullOrEmpty(oAttendance.TimeOut))
                             {
-                                TimeOut = oAttendance.TimeOut;
+                                TimeOut = string.Empty;
                             }
                             else
                             {
@@ -1046,6 +1084,37 @@ namespace AttendanceService
             {
                 logger.Error(ex, ex.Message);
                 return 0M;
+            }
+        }
+        string CalculateDeductionRule(int pTimeDifference)
+        {
+            try
+            {
+                using (dbHRMS odb = new dbHRMS(ConnectionString))
+                {
+                    var oDedRule = (from a in odb.MstDeductionRules
+                                    select a).ToList();
+                    if (oDedRule.Count == 0)
+                    {
+                        logger.Info("no deduction found in company config. CalculateDeductionCount()");
+                        return "";
+                    }
+                    foreach (var rule in oDedRule)
+                    {
+                        int lowerBound = TimeConvert(rule.RangeFrom);
+                        int upperBound = TimeConvert(rule.RangeTo);
+                        if (lowerBound < pTimeDifference && upperBound >= pTimeDifference)
+                        {
+                            return rule.Code;
+                        }
+                    }
+                    return "";
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, ex.Message);
+                return "";
             }
         }
         void SaveAttendance()
@@ -2209,6 +2278,37 @@ namespace AttendanceService
                 if (e.RowIndex != -1)
                 {
                     LineProcess(e.RowIndex);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, ex.Message);
+            }
+        }
+        private void cmbPeriod_SelectedIndexChanged(object sender, Telerik.WinControls.UI.Data.PositionChangedEventArgs e)
+        {
+            try
+            {
+                using (var odb = new dbHRMS(ConnectionString))
+                {
+                    string SelectedPayroll = cmbPayroll.SelectedItem is null ? "" : cmbPayroll.SelectedItem.ToString();
+                    string SelectedPeriod = cmbPeriod.SelectedItem is null ? "" : cmbPeriod.SelectedItem.ToString();
+
+                    if (!string.IsNullOrEmpty(SelectedPayroll) && !string.IsNullOrEmpty(SelectedPeriod))
+                    {
+                        var oPeriods = (from a in odb.CfgPeriodDates
+                                        where a.FlgLocked == false
+                                        && a.CfgPayrollDefination.PayrollName == SelectedPayroll
+                                        && a.PeriodName == SelectedPeriod
+                                        select a).FirstOrDefault();
+                        if(oPeriods is null)
+                        {
+                            return;
+                        }
+                        dtFrom.Value = oPeriods.StartDate.Value;
+                        dtTo.Value = oPeriods.EndDate.Value;
+                    }
+                    
                 }
             }
             catch (Exception ex)
