@@ -6,7 +6,7 @@
       <Value Profile="(Default)">HRSG-FAISALMAQS</Value>
     </Setting>
     <Setting Name="Database" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Scotman</Value>
+      <Value Profile="(Default)">HCMOneScot</Value>
     </Setting>
     <Setting Name="DBUser" Type="System.String" Scope="User">
       <Value Profile="(Default)">sa</Value>

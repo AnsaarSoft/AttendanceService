@@ -290,6 +290,7 @@ namespace AttendanceService
             gridViewTextBoxColumn6,
             gridViewTextBoxColumn7});
             this.grdEmployee.MasterTemplate.EnableAlternatingRowColor = true;
+            this.grdEmployee.MasterTemplate.EnableFiltering = true;
             this.grdEmployee.MasterTemplate.EnableGrouping = false;
             this.grdEmployee.MasterTemplate.ViewDefinition = tableViewDefinition1;
             this.grdEmployee.Name = "grdEmployee";

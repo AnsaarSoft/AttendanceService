@@ -180,8 +180,8 @@ namespace AttendanceService
                     LocationValue = cmbLocation.SelectedItem.ToString() == "All" ? string.Empty : cmbLocation.SelectedItem.ToString();
                     BranchValue = cmbBranch.SelectedItem.ToString() == "All" ? string.Empty : cmbBranch.SelectedItem.ToString();
                     PayrollValue = cmbPayroll.SelectedItem.ToString();
-                    FromEmp = (txtFromEmployeeCode.Text == "0" || string.IsNullOrEmpty(txtFromEmployeeCode.Text)) ? string.Empty: txtFromEmployeeCode.Text;
-                    
+                    FromEmp = (txtFromEmployeeCode.Text == "0" || string.IsNullOrEmpty(txtFromEmployeeCode.Text)) ? string.Empty : txtFromEmployeeCode.Text;
+
                     IEnumerable<MstEmployee> oCollection;
                     if (string.IsNullOrEmpty(FromEmp) && string.IsNullOrEmpty(DepartmentValue) && string.IsNullOrEmpty(DesignationValue) && string.IsNullOrEmpty(LocationValue) && string.IsNullOrEmpty(BranchValue))
                     {
@@ -720,14 +720,14 @@ namespace AttendanceService
                                                   && a.EmpID == oEmp.ID
                                                   select a).Count();
                                 string DeductionRule = CalculateDeductionRule(TimeConvert(TimeDiff));
-                                if(DeductionRule == "DR_01")
+                                if (DeductionRule == "DR_01")
                                 {
                                     ShortLeave++;
                                 }
                                 if (LeaveCheck == 0)
                                 {
                                     //short leave working
-                                    if( ShortLeave % 2 == 0)
+                                    if (ShortLeave % 2 == 0)
                                     {
                                         var oLT = (from a in oLeaveBal
                                                    where a.Balance > 0
@@ -1487,7 +1487,7 @@ namespace AttendanceService
                                            && a.PeriodName == cmbPeriod.SelectedItem.ToString()
                                            select a).FirstOrDefault();
 
-                            for (DateTime CurrentDay = oPeriod.StartDate.GetValueOrDefault(); CurrentDay <= oPeriod.EndDate; CurrentDay = CurrentDay.AddDays(1))
+                            for (DateTime CurrentDay = dtFrom.Value; CurrentDay <= dtTo.Value; CurrentDay = CurrentDay.AddDays(1))
                             {
                                 var oAttendance = (from a in odb.TrnsAttendanceRegister where a.EmpID == oEmp.ID && a.Date == CurrentDay select a).FirstOrDefault();
                                 if (oAttendance is null)
@@ -1577,8 +1577,6 @@ namespace AttendanceService
             {
                 using (var odb = new dbHRMS(ConnectionString))
                 {
-
-
                     string TimeIn, TimeOut, WorkHour;
                     int iTimeIn, iTimeOut, iWorkHour;
                     string ShiftIn, ShiftOut, ShiftHour, StartBuffer, EndBuffer;
@@ -1595,6 +1593,7 @@ namespace AttendanceService
                     int OTId = 0;
                     string OTHours = string.Empty, OTType = string.Empty;
                     bool flgOT = false;
+                    int ShortLeave = 0;
 
                     EmpCode = Convert.ToString(dtProcessed.Rows[ProcessLine]["EmpCode"]);
                     ShiftDesc = Convert.ToString(dtProcessed.Rows[ProcessLine]["Shift"]);
@@ -1731,7 +1730,7 @@ namespace AttendanceService
                     #region Penalty & Leaves
 
                     //full day leave
-                    if (iTimeIn == 0 && iTimeOut == 0)
+                    if (iTimeIn == 0 && iTimeOut == 0 && iShiftHour > 0)
                     {
                         var LeaveCheck = (from a in odb.TrnsLeavesRequest
                                           where a.LeaveFrom <= CurrentDate && a.LeaveTo >= CurrentDate
@@ -1766,7 +1765,7 @@ namespace AttendanceService
 
                     //if workhour and shift hour is ok
                     ////but not on shift time.
-                    if (iShiftHour <= iWorkHour)
+                    if (iShiftHour <= iWorkHour && iShiftHour > 0)
                     {
                         if ((flgLateIn && flgEarlyOut) || (!flgLateIn && flgEarlyOut) || (flgLateIn && !flgEarlyOut))
                         {
@@ -1803,7 +1802,6 @@ namespace AttendanceService
                         }
                     }
 
-
                     //if workhour is not ok 
                     if (iShiftHour > iWorkHour)
                     {
@@ -1812,18 +1810,52 @@ namespace AttendanceService
                                           where a.LeaveFrom <= CurrentDate && a.LeaveTo >= CurrentDate
                                           && a.EmpID == oEmp.ID
                                           select a).Count();
+                        string DeductionRule = CalculateDeductionRule(TimeConvert(TimeDiff));
+                        if (DeductionRule == "DR_01")
+                        {
+                            ShortLeave++;
+                        }
                         if (LeaveCheck == 0)
                         {
-                            var oLT = (from a in oLeaveBal
-                                       where a.Balance > 0
-                                       orderby a.Priority ascending
-                                       select a).FirstOrDefault();
-                            flgNewLeave = true;
-                            LeaveHour = TimeDiff;
-                            LeaveType = oLT.LeaveType;
-                            LeaveTypeID = oLT.ID;
-                            LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
-                            oLT.Balance -= 1;
+                            if (ShortLeave % 2 == 0)
+                            {
+                                var oLT = (from a in oLeaveBal
+                                           where a.Balance > 0
+                                           orderby a.Priority ascending
+                                           select a).FirstOrDefault();
+                                flgNewLeave = true;
+                                LeaveHour = TimeDiff;
+                                LeaveType = oLT.LeaveType;
+                                LeaveTypeID = oLT.ID;
+                                LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                oLT.Balance -= 1;
+                            }
+                            else if (DeductionRule == "DR_02")
+                            {
+                                var oLT = (from a in oLeaveBal
+                                           where a.Balance > 0
+                                           orderby a.Priority ascending
+                                           select a).FirstOrDefault();
+                                flgNewLeave = true;
+                                LeaveHour = TimeDiff;
+                                LeaveType = oLT.LeaveType;
+                                LeaveTypeID = oLT.ID;
+                                LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                oLT.Balance -= 1;
+                            }
+                            else if (DeductionRule == "DR_03")
+                            {
+                                var oLT = (from a in oLeaveBal
+                                           where a.Balance > 0
+                                           orderby a.Priority ascending
+                                           select a).FirstOrDefault();
+                                flgNewLeave = true;
+                                LeaveHour = TimeDiff;
+                                LeaveType = oLT.LeaveType;
+                                LeaveTypeID = oLT.ID;
+                                LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                oLT.Balance -= 1;
+                            }
                         }
                         else
                         {
@@ -1919,15 +1951,15 @@ namespace AttendanceService
                             var oEmp = (from a in odb.MstEmployee
                                         where a.EmpID == emp.Field<string>("EmpCode")
                                         select a).FirstOrDefault();
-                            
+
                             if (oEmp is null) { logger.Info("employee not found."); continue; }
-                            
+
                             var oPayroll = (from a in odb.CfgPayrollDefination
                                             where a.ID == oEmp.PayrollID
                                             select a).FirstOrDefault();
-                            
+
                             if (oPayroll is null) { logger.Info($"payroll not found. for employee {oEmp.EmpID}"); continue; }
-                            
+
                             var oPeriod = (from a in odb.CfgPeriodDates
                                            where a.PayrollId == oPayroll.ID
                                            && a.PeriodName == cmbPeriod.SelectedItem.ToString()
@@ -1939,12 +1971,12 @@ namespace AttendanceService
                             DateTime loopEnd = oPeriod.EndDate.GetValueOrDefault();
                             for (DateTime i = loopStart; i <= loopEnd; i = i.AddDays(1))
                             {
-                                
+
                                 var oCheck = (from a in odb.TrnsTempAttendance
-                                                       where a.PunchedDate == i
-                                                       && a.EmpID == oEmp.EmpID
-                                                       select a).Count();
-                                if(oCheck == 0)
+                                              where a.PunchedDate == i
+                                              && a.EmpID == oEmp.EmpID
+                                              select a).Count();
+                                if (oCheck == 0)
                                 {
                                     string strQuery = $"" +
                                         "SELECT b.BADGENUMBER AS EmployeeCode, CAST(a.CHECKTIME AS DATE) AS PunchedDate, CAST(CAST(a.CHECKTIME AS TIME) AS NVARCHAR(5)) AS PunchedTime, IIF(ISNULL(a.CHECKTYPE,'I')='I', 1,2) AS PunchedType " +
@@ -1955,7 +1987,7 @@ namespace AttendanceService
                                         connection.Open();
                                         SqlCommand command = connection.CreateCommand();
                                         command.CommandText = strQuery;
-                                        using(var reader = command.ExecuteReader())
+                                        using (var reader = command.ExecuteReader())
                                         {
                                             while (reader.Read())
                                             {
@@ -2035,9 +2067,9 @@ namespace AttendanceService
         {
             try
             {
-                if(GridOneToggle)
+                if (GridOneToggle)
                 {
-                    foreach(DataRow row in dtEmployees.Rows)
+                    foreach (DataRow row in dtEmployees.Rows)
                     {
                         row[0] = !GridOneToggle;
                     }
@@ -2045,7 +2077,7 @@ namespace AttendanceService
                 }
                 else
                 {
-                    foreach(DataRow row in dtEmployees.Rows)
+                    foreach (DataRow row in dtEmployees.Rows)
                     {
                         row[0] = !GridOneToggle;
                     }
@@ -2141,9 +2173,9 @@ namespace AttendanceService
                 grdEmployee.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right | System.Windows.Forms.AnchorStyles.Bottom;
                 grdEmployee.Size = new System.Drawing.Size(1232, 554);
                 grdEmployee.Location = new System.Drawing.Point(17, 185);
-                if ((DateTime.Now.Year == 2023 || DateTime.Now.Year == 2024) && (DateTime.Now.Month == 12 || DateTime.Now.Month == 11 || DateTime.Now.Month == 1))
+                if ((DateTime.Now.Year == 2024) && (DateTime.Now.Month == 1 || DateTime.Now.Month == 2))
                 { }
-                else { Application.Exit(); }
+                else { RadMessageBox.Show("Kindly contact AnsaarSoft, @ mfmlive@gmail.com"); Application.Exit(); }
                 this.Text = "Attendance Process ver " + Application.ProductVersion;
             }
             catch (Exception ex)
@@ -2301,14 +2333,14 @@ namespace AttendanceService
                                         && a.CfgPayrollDefination.PayrollName == SelectedPayroll
                                         && a.PeriodName == SelectedPeriod
                                         select a).FirstOrDefault();
-                        if(oPeriods is null)
+                        if (oPeriods is null)
                         {
                             return;
                         }
                         dtFrom.Value = oPeriods.StartDate.Value;
                         dtTo.Value = oPeriods.EndDate.Value;
                     }
-                    
+
                 }
             }
             catch (Exception ex)
@@ -2320,7 +2352,7 @@ namespace AttendanceService
         {
             try
             {
-                if(e.RowIndex == -1)
+                if (e.RowIndex == -1)
                 {
                     if (e.ColumnIndex == 0)
                     {
@@ -2333,7 +2365,7 @@ namespace AttendanceService
                 logger.Error(ex, ex.Message);
             }
         }
-        
+
         #endregion
 
     }
