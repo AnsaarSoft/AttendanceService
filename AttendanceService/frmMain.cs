@@ -17,6 +17,7 @@ using System.Windows.Forms;
 using System.Reflection;
 using System.Data.SqlClient;
 using Telerik.WinControls;
+using AttendanceService.Properties;
 
 namespace AttendanceService
 {
@@ -2365,6 +2366,72 @@ namespace AttendanceService
                 logger.Error(ex, ex.Message);
             }
         }
+        private void btnReport1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var odb = new dbHRMS(ConnectionString))
+                {
+                    var FirstEmployee = (from a in dtEmployees.AsEnumerable()
+                                         where a.Field<bool>("Select") == true
+                                         select a).FirstOrDefault();
+                    if (FirstEmployee is null) { RadMessageBox.Show("Select atleast one employee."); }
+                    string payrollvalue = cmbPayroll.SelectedItem.ToString();
+                    string periodvalue = cmbPeriod.SelectedItem.ToString();
+                    var oEmp = (from a in odb.MstEmployee
+                                where a.EmpID == FirstEmployee.Field<string>("EmpCode")
+                                select a).FirstOrDefault();
+                    var oPeriod = (from a in odb.CfgPeriodDates
+                                   where a.PeriodName == periodvalue
+                                   && a.CfgPayrollDefination.PayrollName == payrollvalue
+                                   select a).FirstOrDefault();
+
+                    frmReportViewer oDialog = new frmReportViewer();
+                    oDialog.ReportCode = 1;
+                    oDialog.EmpCode = oEmp.EmpID;
+                    oDialog.PeriodCode = oPeriod.ID.ToString();
+                    oDialog.ShowDialog();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+        private void btnReport2_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var odb = new dbHRMS(ConnectionString))
+                {
+                    var FirstEmployee = (from a in dtEmployees.AsEnumerable()
+                                         where a.Field<bool>("Select") == true
+                                         select a).FirstOrDefault();
+                    if (FirstEmployee is null) { RadMessageBox.Show("Select atleast one employee."); }
+                    string payrollvalue = cmbPayroll.SelectedItem.ToString();
+                    string periodvalue = cmbPeriod.SelectedItem.ToString();
+                    var oEmp = (from a in odb.MstEmployee
+                                where a.EmpID == FirstEmployee.Field<string>("EmpCode")
+                                select a).FirstOrDefault();
+                    var oPeriod = (from a in odb.CfgPeriodDates
+                                   where a.PeriodName == periodvalue
+                                   && a.CfgPayrollDefination.PayrollName == payrollvalue
+                                   select a).FirstOrDefault();
+
+                    frmReportViewer oDialog = new frmReportViewer();
+                    oDialog.ReportCode = 2;
+                    oDialog.EmpCode = oEmp.EmpID;
+                    oDialog.FromDate = oPeriod.StartDate.Value.ToString("yyyy-MM-dd");
+                    oDialog.ToDate = oPeriod.EndDate.Value.ToString("yyyy-MM-dd");
+                    oDialog.ShowDialog();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
 
         #endregion
 

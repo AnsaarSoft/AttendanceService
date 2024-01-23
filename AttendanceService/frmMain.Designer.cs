@@ -97,6 +97,8 @@ namespace AttendanceService
             this.dtFrom = new Telerik.WinControls.UI.RadDateTimePicker();
             this.dtTo = new Telerik.WinControls.UI.RadDateTimePicker();
             this.txtFromEmployeeCode = new Telerik.WinControls.UI.RadButtonTextBox();
+            this.btnReport1 = new Telerik.WinControls.UI.RadButton();
+            this.btnReport2 = new Telerik.WinControls.UI.RadButton();
             ((System.ComponentModel.ISupportInitialize)(this.grdEmployee)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.grdEmployee.MasterTemplate)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.btnSearch)).BeginInit();
@@ -116,6 +118,8 @@ namespace AttendanceService
             ((System.ComponentModel.ISupportInitialize)(this.dtFrom)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dtTo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtFromEmployeeCode)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnReport1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnReport2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             this.SuspendLayout();
             // 
@@ -327,7 +331,7 @@ namespace AttendanceService
             this.grdProcess.Font = new System.Drawing.Font("Segoe UI", 8.25F);
             this.grdProcess.ForeColor = System.Drawing.Color.Black;
             this.grdProcess.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.grdProcess.Location = new System.Drawing.Point(778, 146);
+            this.grdProcess.Location = new System.Drawing.Point(778, 170);
             this.grdProcess.Margin = new System.Windows.Forms.Padding(75);
             // 
             // 
@@ -745,11 +749,33 @@ namespace AttendanceService
             this.txtFromEmployeeCode.Text = "0";
             this.txtFromEmployeeCode.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
+            // btnReport1
+            // 
+            this.btnReport1.Location = new System.Drawing.Point(691, 110);
+            this.btnReport1.Margin = new System.Windows.Forms.Padding(8);
+            this.btnReport1.Name = "btnReport1";
+            this.btnReport1.Size = new System.Drawing.Size(120, 40);
+            this.btnReport1.TabIndex = 37;
+            this.btnReport1.Text = "Report 1";
+            this.btnReport1.Click += new System.EventHandler(this.btnReport1_Click);
+            // 
+            // btnReport2
+            // 
+            this.btnReport2.Location = new System.Drawing.Point(821, 110);
+            this.btnReport2.Margin = new System.Windows.Forms.Padding(8);
+            this.btnReport2.Name = "btnReport2";
+            this.btnReport2.Size = new System.Drawing.Size(120, 40);
+            this.btnReport2.TabIndex = 38;
+            this.btnReport2.Text = "Report 2";
+            this.btnReport2.Click += new System.EventHandler(this.btnReport2_Click);
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1263, 745);
+            this.Controls.Add(this.btnReport2);
+            this.Controls.Add(this.btnReport1);
             this.Controls.Add(this.txtFromEmployeeCode);
             this.Controls.Add(this.dtTo);
             this.Controls.Add(this.dtFrom);
@@ -803,6 +829,8 @@ namespace AttendanceService
             ((System.ComponentModel.ISupportInitialize)(this.dtFrom)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dtTo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtFromEmployeeCode)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnReport1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.btnReport2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -840,6 +868,8 @@ namespace AttendanceService
         private Telerik.WinControls.UI.RadDateTimePicker dtFrom;
         private Telerik.WinControls.UI.RadDateTimePicker dtTo;
         private Telerik.WinControls.UI.RadButtonTextBox txtFromEmployeeCode;
+        private Telerik.WinControls.UI.RadButton btnReport1;
+        private Telerik.WinControls.UI.RadButton btnReport2;
     }
 }
 
