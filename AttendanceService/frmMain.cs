@@ -391,6 +391,8 @@ namespace AttendanceService
                     //DateTime loopEnd = oPeriod.EndDate.GetValueOrDefault();
                     DateTime loopEnd = dtTo.Value;
                     int ShortLeave = 0;
+                    var oAttendanceRule = (from a in odb.MstAttendanceRule
+                                           select a).FirstOrDefault();
                     for (DateTime i = loopStart; i <= loopEnd; i = i.AddDays(1))
                     {
                         if (i < oEmp.JoiningDate.GetValueOrDefault().Date)
@@ -611,8 +613,13 @@ namespace AttendanceService
                             {
                                 if (iTimeIn - iShiftIn > 0)
                                 {
-                                    LateIn = TimeConvert(iTimeIn - iShiftIn);
-                                    flgLateIn = true;
+                                    //outside graceperiod
+                                    int iGracePeriod = TimeConvert(oAttendanceRule.GpAfterStartTime);
+                                    if ((iTimeIn - iShiftIn) > iGracePeriod)
+                                    {
+                                        LateIn = TimeConvert(iTimeIn - iShiftIn);
+                                        flgLateIn = true;
+                                    }
                                 }
                                 if (iShiftIn - iTimeIn > 0)
                                 {
@@ -683,18 +690,52 @@ namespace AttendanceService
                                                       where a.LeaveFrom <= i && a.LeaveTo >= i
                                                       && a.EmpID == oEmp.ID
                                                       select a).Count();
+                                    string DeductionRule = CalculateDeductionRule(TimeConvert(TimeDiff));
+                                    if (DeductionRule == "DR_01")
+                                    {
+                                        ShortLeave++;
+                                    }
                                     if (LeaveCheck == 0)
                                     {
-                                        var oLT = (from a in oLeaveBal
-                                                   where a.Balance > 0
-                                                   orderby a.Priority ascending
-                                                   select a).FirstOrDefault();
-                                        flgNewLeave = true;
-                                        LeaveHour = TimeDiff;
-                                        LeaveType = oLT.LeaveType;
-                                        LeaveTypeID = oLT.ID;
-                                        LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
-                                        oLT.Balance -= 1;
+                                        if (ShortLeave % 2 == 0)
+                                        {
+                                            var oLT = (from a in oLeaveBal
+                                                       where a.Balance > 0
+                                                       orderby a.Priority ascending
+                                                       select a).FirstOrDefault();
+                                            flgNewLeave = true;
+                                            LeaveHour = TimeDiff;
+                                            LeaveType = oLT.LeaveType;
+                                            LeaveTypeID = oLT.ID;
+                                            LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                            oLT.Balance -= 1;
+                                        }
+                                        else if (DeductionRule == "DR_02")
+                                        {
+                                            var oLT = (from a in oLeaveBal
+                                                       where a.Balance > 0
+                                                       orderby a.Priority ascending
+                                                       select a).FirstOrDefault();
+                                            flgNewLeave = true;
+                                            LeaveHour = TimeDiff;
+                                            LeaveType = oLT.LeaveType;
+                                            LeaveTypeID = oLT.ID;
+                                            LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                            oLT.Balance -= 1;
+                                        }
+                                        else if (DeductionRule == "DR_03")
+                                        {
+                                            var oLT = (from a in oLeaveBal
+                                                       where a.Balance > 0
+                                                       orderby a.Priority ascending
+                                                       select a).FirstOrDefault();
+                                            flgNewLeave = true;
+                                            LeaveHour = TimeDiff;
+                                            LeaveType = oLT.LeaveType;
+                                            LeaveTypeID = oLT.ID;
+                                            LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                            oLT.Balance -= 1;
+                                        }
                                     }
                                     else
                                     {
