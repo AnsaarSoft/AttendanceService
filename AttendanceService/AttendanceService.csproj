@@ -142,10 +142,10 @@
     <Compile Include="frmReportViewer.Designer.cs">
       <DependentUpon>frmReportViewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="Report\SaveandPostedAttendanceReport.cs">
+    <Compile Include="Report\AttendanceReport.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>SaveandPostedAttendanceReport.rpt</DependentUpon>
+      <DependentUpon>AttendanceReport.rpt</DependentUpon>
       <SubType>Component</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
@@ -174,9 +174,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Content Include="Report\SaveandPostedAttendanceReport.rpt">
+    <Content Include="Report\AttendanceReport.rpt">
       <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
-      <LastGenOutput>SaveandPostedAttendanceReport.cs</LastGenOutput>
+      <LastGenOutput>AttendanceReport.cs</LastGenOutput>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Report\TempAttendanceReport.rpt">
