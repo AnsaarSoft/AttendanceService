@@ -356,11 +356,11 @@ namespace AttendanceService
                                     switch (oDoc.ID)
                                     {
                                         case 3:
-                                            oDoc.Priority = 1; break;
+                                            oDoc.Priority = 3; break;
                                         case 1:
                                             oDoc.Priority = 2; break;
                                         case 2:
-                                            oDoc.Priority = 3; break;
+                                            oDoc.Priority = 1; break;
                                         case 7:
                                             continue;
                                             //oDoc.Priority = 4; break;
