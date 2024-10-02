@@ -343,8 +343,6 @@ namespace AttendanceService
                                     oDoc.Balance = leave.LeavesEntitled + leave.LeavesCarryForward;
                                     switch (oDoc.ID)
                                     {
-                                        case 10:
-                                            oDoc.Priority = 10; break;
                                         case 3:
                                             oDoc.Priority = 1; break;
                                         case 1:
@@ -359,6 +357,10 @@ namespace AttendanceService
                                             oDoc.Priority = 6; break;
                                         case 4:
                                             oDoc.Priority = 7; break;
+                                        case 8:
+                                            oDoc.Priority = 8; break;
+                                        case 10:
+                                            oDoc.Priority = 10; break;
 
                                     }
                                     oLeaves.Add(oDoc);
