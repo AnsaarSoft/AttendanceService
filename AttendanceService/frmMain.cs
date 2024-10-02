@@ -1,4 +1,4 @@
-﻿using DIHRMS;
+using DIHRMS;
 using NLog;
 using NLog.Layouts;
 using System;
@@ -34,6 +34,7 @@ namespace AttendanceService
         #endregion
 
         #region Functions
+        
         void CreateGrid()
         {
             try
@@ -322,9 +323,19 @@ namespace AttendanceService
                                 continue;
                             }
 
+                            var oCalendar = (from a in odb.MstCalendar
+                                             where a.FlgActive == true
+                                             select a).FirstOrDefault();
+
+                            if(oCalendar is null)
+                            {
+                                logger.Info("calendar not active or define.");
+                                continue;
+                            }
+
                             var oEmpLeave = (from a in odb.MstEmployeeLeaves
                                              where a.EmpID == oEmp.ID
-                                             && a.LeaveCalCode == "FY_23_24"
+                                             && a.LeaveCalCode == oCalendar.Code
                                              && a.LeavesEntitled > 0
                                              select a).ToList();
                             List<LeaveStructure> oLeaves = new List<LeaveStructure>();
@@ -337,6 +348,7 @@ namespace AttendanceService
                             {
                                 foreach (var leave in oEmpLeave)
                                 {
+                                    //if (leave.ID != 1 || leave.ID != 2 || leave.ID != 3 || leave.ID != 10) continue;
                                     LeaveStructure oDoc = new LeaveStructure();
                                     oDoc.ID = leave.LeaveType ?? 0;
                                     oDoc.LeaveType = leave.MstLeaveType.Description;
@@ -344,23 +356,37 @@ namespace AttendanceService
                                     switch (oDoc.ID)
                                     {
                                         case 3:
-                                            oDoc.Priority = 1; break;
+                                            oDoc.Priority = 3; break;
                                         case 1:
                                             oDoc.Priority = 2; break;
                                         case 2:
-                                            oDoc.Priority = 3; break;
+                                            oDoc.Priority = 1; break;
                                         case 7:
-                                            oDoc.Priority = 4; break;
+                                            continue;
+                                            //oDoc.Priority = 4; break;
                                         case 6:
-                                            oDoc.Priority = 5; break;
+                                            continue;
+                                            //oDoc.Priority = 5; break;
                                         case 5:
-                                            oDoc.Priority = 6; break;
+                                            continue;
+                                            //oDoc.Priority = 6; break;
                                         case 4:
-                                            oDoc.Priority = 7; break;
-                                        case 8:
-                                            oDoc.Priority = 8; break;
+                                            continue;
+                                            //oDoc.Priority = 7; break;
                                         case 10:
                                             oDoc.Priority = 10; break;
+                                        case 8:
+                                            continue;
+                                            //oDoc.Priority = 11; break;
+                                        case 9:
+                                            continue;
+                                            //oDoc.Priority = 12; break;
+                                        case 11:
+                                            continue;
+                                            //oDoc.Priority = 13; break;
+                                        case 12:
+                                            continue;
+                                            //oDoc.Priority = 14; break;
 
                                     }
                                     oLeaves.Add(oDoc);
@@ -658,7 +684,41 @@ namespace AttendanceService
                                 {
                                     var oLT = (from a in oLeaveBal
                                                where a.Balance > 0
-                                               orderby a.Priority ascending
+                                               && a.LeaveType == "ABSENT"
+                                               select a).FirstOrDefault();
+                                    flgNewLeave = true;
+                                    LeaveHour = ShiftDuration;
+                                    LeaveType = oLT.LeaveType;
+                                    LeaveTypeID = oLT.ID;
+                                    LeaveCount = 1;
+                                    oLT.Balance -= 1;
+                                }
+                                else
+                                {
+                                    var oLeaveRequest = (from a in odb.TrnsLeavesRequest
+                                                         where a.LeaveFrom <= i && a.LeaveTo >= i
+                                                         && a.EmpID == oEmp.ID
+                                                         select a).FirstOrDefault();
+                                    flgNewLeave = false;
+                                    LeaveHour = ShiftDuration;
+                                    LeaveType = oLeaveRequest.MstLeaveType.Description;
+                                    LeaveCount = 1;
+                                    LeaveTypeID = oLeaveRequest.LeaveType ?? 0;
+                                }
+                            }
+
+                            //Missing timein or timeout
+                            if ((iTimeIn > 0 && iTimeOut == 0 && iShiftDuration > 0) || (iTimeIn == 0 && iTimeOut > 0 && iShiftDuration > 0))
+                            {
+                                var LeaveCheck = (from a in odb.TrnsLeavesRequest
+                                                  where a.LeaveFrom <= i && a.LeaveTo >= i
+                                                  && a.EmpID == oEmp.ID
+                                                  select a).Count();
+                                if (LeaveCheck == 0)
+                                {
+                                    var oLT = (from a in oLeaveBal
+                                               where a.Balance > 0
+                                               && a.LeaveType == "ABSENT"
                                                select a).FirstOrDefault();
                                     flgNewLeave = true;
                                     LeaveHour = ShiftDuration;
@@ -756,7 +816,7 @@ namespace AttendanceService
 
 
                             //if workhour is not ok 
-                            if (iShiftDuration > iWorkHour)
+                            if (iShiftDuration > iWorkHour && iTimeIn > 0 && iTimeOut > 0)
                             {
                                 string TimeDiff = TimeConvert(iShiftDuration - iWorkHour);
                                 var LeaveCheck = (from a in odb.TrnsLeavesRequest
@@ -1784,7 +1844,41 @@ namespace AttendanceService
                         {
                             var oLT = (from a in oLeaveBal
                                        where a.Balance > 0
-                                       orderby a.Priority ascending
+                                       && a.LeaveType == "ABSENT"
+                                       select a).FirstOrDefault();
+                            flgNewLeave = true;
+                            LeaveHour = ShiftHour;
+                            LeaveType = oLT.LeaveType;
+                            LeaveTypeID = oLT.ID;
+                            LeaveCount = 1;
+                            oLT.Balance -= 1;
+                        }
+                        else
+                        {
+                            var oLeaveRequest = (from a in odb.TrnsLeavesRequest
+                                                 where a.LeaveFrom <= CurrentDate && a.LeaveTo >= CurrentDate
+                                                 && a.EmpID == oEmp.ID
+                                                 select a).FirstOrDefault();
+                            flgNewLeave = false;
+                            LeaveHour = ShiftHour;
+                            LeaveType = oLeaveRequest.MstLeaveType.Description;
+                            LeaveCount = 1;
+                            LeaveTypeID = oLeaveRequest.LeaveType ?? 0;
+                        }
+                    }
+
+                    //Missing timein or timeout
+                    if ((iTimeIn > 0 && iTimeOut == 0 && iShiftHour > 0) || (iTimeIn == 0 && iTimeOut > 0 && iShiftHour > 0))
+                    {
+                        var LeaveCheck = (from a in odb.TrnsLeavesRequest
+                                          where a.LeaveFrom <= CurrentDate && a.LeaveTo >= CurrentDate
+                                          && a.EmpID == oEmp.ID
+                                          select a).Count();
+                        if (LeaveCheck == 0)
+                        {
+                            var oLT = (from a in oLeaveBal
+                                       where a.Balance > 0
+                                       && a.LeaveType == "ABSENT"
                                        select a).FirstOrDefault();
                             flgNewLeave = true;
                             LeaveHour = ShiftHour;
@@ -1847,7 +1941,7 @@ namespace AttendanceService
                     }
 
                     //if workhour is not ok 
-                    if (iShiftHour > iWorkHour)
+                    if (iShiftHour > iWorkHour && iTimeIn > 0 && iTimeOut > 0)
                     {
                         string TimeDiff = TimeConvert(iShiftHour - iWorkHour);
                         var LeaveCheck = (from a in odb.TrnsLeavesRequest
@@ -2217,7 +2311,7 @@ namespace AttendanceService
                 grdEmployee.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right | System.Windows.Forms.AnchorStyles.Bottom;
                 grdEmployee.Size = new System.Drawing.Size(1232, 554);
                 grdEmployee.Location = new System.Drawing.Point(17, 185);
-                if ((DateTime.Now.Year == 2024) && (DateTime.Now.Month == 1 || DateTime.Now.Month == 2))
+                if ((DateTime.Now.Year == 2024) && (DateTime.Now.Month == 3 || DateTime.Now.Month == 4))
                 { }
                 else { RadMessageBox.Show("Kindly contact AnsaarSoft, @ mfmlive@gmail.com"); Application.Exit(); }
                 this.Text = "Attendance Process ver " + Application.ProductVersion;

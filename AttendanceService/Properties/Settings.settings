@@ -3,10 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="ServerName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">HRSG-FAISALMAQS</Value>
+      <Value Profile="(Default)">MFMLAP</Value>
     </Setting>
     <Setting Name="Database" Type="System.String" Scope="User">
-      <Value Profile="(Default)">HCMOneScot</Value>
+      <Value Profile="(Default)">HCMTest</Value>
     </Setting>
     <Setting Name="DBUser" Type="System.String" Scope="User">
       <Value Profile="(Default)">sa</Value>
@@ -15,7 +15,7 @@
       <Value Profile="(Default)">super</Value>
     </Setting>
     <Setting Name="AttDbServer" Type="System.String" Scope="User">
-      <Value Profile="(Default)">HRSG-FAISALMAQS</Value>
+      <Value Profile="(Default)">HCMTest</Value>
     </Setting>
     <Setting Name="AttDbDatabase" Type="System.String" Scope="User">
       <Value Profile="(Default)">ScottyAttDB</Value>
