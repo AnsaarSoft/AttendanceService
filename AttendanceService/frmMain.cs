@@ -686,6 +686,7 @@ namespace AttendanceService
                                                where a.Balance > 0
                                                && a.LeaveType == "ABSENT"
                                                select a).FirstOrDefault();
+                                    if (oLT == null) { RadMessageBox.Show("Leave type not assign to employee Absent."); continue; }
                                     flgNewLeave = true;
                                     LeaveHour = ShiftDuration;
                                     LeaveType = oLT.LeaveType;
@@ -720,6 +721,7 @@ namespace AttendanceService
                                                where a.Balance > 0
                                                && a.LeaveType == "ABSENT"
                                                select a).FirstOrDefault();
+                                    if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
                                     flgNewLeave = true;
                                     LeaveHour = ShiftDuration;
                                     LeaveType = oLT.LeaveType;
@@ -765,6 +767,7 @@ namespace AttendanceService
                                                        where a.Balance > 0
                                                        orderby a.Priority ascending
                                                        select a).FirstOrDefault();
+                                            if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
                                             flgNewLeave = true;
                                             LeaveHour = TimeDiff;
                                             LeaveType = oLT.LeaveType;
@@ -778,6 +781,7 @@ namespace AttendanceService
                                                        where a.Balance > 0
                                                        orderby a.Priority ascending
                                                        select a).FirstOrDefault();
+                                            if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
                                             flgNewLeave = true;
                                             LeaveHour = TimeDiff;
                                             LeaveType = oLT.LeaveType;
@@ -791,6 +795,7 @@ namespace AttendanceService
                                                        where a.Balance > 0
                                                        orderby a.Priority ascending
                                                        select a).FirstOrDefault();
+                                            if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
                                             flgNewLeave = true;
                                             LeaveHour = TimeDiff;
                                             LeaveType = oLT.LeaveType;
@@ -837,6 +842,7 @@ namespace AttendanceService
                                                    where a.Balance > 0
                                                    orderby a.Priority ascending
                                                    select a).FirstOrDefault();
+                                        if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
                                         flgNewLeave = true;
                                         LeaveHour = TimeDiff;
                                         LeaveType = oLT.LeaveType;
@@ -850,6 +856,7 @@ namespace AttendanceService
                                                    where a.Balance > 0
                                                    orderby a.Priority ascending
                                                    select a).FirstOrDefault();
+                                        if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
                                         flgNewLeave = true;
                                         LeaveHour = TimeDiff;
                                         LeaveType = oLT.LeaveType;
@@ -863,6 +870,7 @@ namespace AttendanceService
                                                    where a.Balance > 0
                                                    orderby a.Priority ascending
                                                    select a).FirstOrDefault();
+                                        if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
                                         flgNewLeave = true;
                                         LeaveHour = TimeDiff;
                                         LeaveType = oLT.LeaveType;
@@ -2311,7 +2319,7 @@ namespace AttendanceService
                 grdEmployee.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right | System.Windows.Forms.AnchorStyles.Bottom;
                 grdEmployee.Size = new System.Drawing.Size(1232, 554);
                 grdEmployee.Location = new System.Drawing.Point(17, 185);
-                if ((DateTime.Now.Year == 2024) && (DateTime.Now.Month == 3 || DateTime.Now.Month == 4))
+                if ((DateTime.Now.Year == 2025) && (DateTime.Now.Month == 1 || DateTime.Now.Month == 2 || DateTime.Now.Month == 3 || DateTime.Now.Month == 4 || DateTime.Now.Month == 5 || DateTime.Now.Month == 6))
                 { }
                 else { RadMessageBox.Show("Kindly contact AnsaarSoft, @ mfmlive@gmail.com"); Application.Exit(); }
                 this.Text = "Attendance Process ver " + Application.ProductVersion;
