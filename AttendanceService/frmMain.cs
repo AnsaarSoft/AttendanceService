@@ -1,4 +1,4 @@
-﻿using DIHRMS;
+using DIHRMS;
 using NLog;
 using NLog.Layouts;
 using System;
