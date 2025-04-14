@@ -2124,10 +2124,8 @@ namespace AttendanceService
                                               select a).Count();
                                 if (oCheck == 0)
                                 {
-                                    string strQuery = $"" +
-                                        "SELECT b.BADGENUMBER AS EmployeeCode, CAST(a.CHECKTIME AS DATE) AS PunchedDate, CAST(CAST(a.CHECKTIME AS TIME) AS NVARCHAR(5)) AS PunchedTime, IIF(ISNULL(a.CHECKTYPE,'I')='I', 1,2) AS PunchedType " +
-                                        "FROM dbo.CHECKINOUT a  INNER JOIN dbo.USERINFO b ON b.USERID = a.USERID " +
-                                        $"WHERE b.BADGENUMBER = '{oEmp.EmpID}' AND CAST(a.CHECKTIME AS DATE) = '{i.ToString("yyyy-MM-dd")}'";
+                                    string strQuery =                                         
+                                        $"select a.CardNo AS EmployeeCode, CAST( a.PunchDatetime AS DATE) AS PunchedDate, CAST(CAST(a.PunchDatetime AS TIME) AS NVARCHAR(5)) AS PunchedTime from Tran_MachineRawPunch as a where a.CardNo = {oEmp.EmpID} and CAST(a.PunchDatetime as date) = '{i.ToString("yyyy-MM-dd")}'";
                                     using (SqlConnection connection = new SqlConnection(AttConnectionString))
                                     {
                                         connection.Open();
@@ -2166,10 +2164,9 @@ namespace AttendanceService
                                         command.ExecuteNonQuery();
                                         connection.Close();
                                     }
-                                    string strQuery = $"" +
-                                        "SELECT b.BADGENUMBER AS EmployeeCode, CAST(a.CHECKTIME AS DATE) AS PunchedDate, CAST(CAST(a.CHECKTIME AS TIME) AS NVARCHAR(5)) AS PunchedTime, IIF(ISNULL(a.CHECKTYPE,'I')='I', 1,2) AS PunchedType " +
-                                        "FROM dbo.CHECKINOUT a  INNER JOIN dbo.USERINFO b ON b.USERID = a.USERID " +
-                                        $"WHERE b.BADGENUMBER = '{oEmp.EmpID}' AND CAST(a.CHECKTIME AS DATE) = '{i.ToString("yyyy-MM-dd")}'";
+                                    string strQuery = 
+                                        $"select a.CardNo AS EmployeeCode, CAST( a.PunchDatetime AS DATE) AS PunchedDate, CAST(CAST(a.PunchDatetime AS TIME) AS NVARCHAR(5)) AS PunchedTime from Tran_MachineRawPunch as a where a.CardNo = {oEmp.EmpID} and CAST(a.PunchDatetime as date) = '{i.ToString("yyyy-MM-dd")}'";
+                                        
                                     using (SqlConnection connection = new SqlConnection(AttConnectionString))
                                     {
                                         connection.Open();
@@ -2233,6 +2230,17 @@ namespace AttendanceService
             catch (Exception ex)
             {
                 logger.Error(ex, ex.Message);
+            }
+        }
+        void ImportTempAttendance()
+        {
+            try
+            {
+                
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
             }
         }
 
@@ -2313,12 +2321,12 @@ namespace AttendanceService
                 FillCombo();
                 grdProcess.Visible = false;
                 grdEmployee.Visible = true;
-                grdProcess.Size = new System.Drawing.Size(1232, 554);
-                grdProcess.Location = new System.Drawing.Point(17, 185);
-                grdProcess.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right | System.Windows.Forms.AnchorStyles.Bottom;
+                //grdProcess.Size = new System.Drawing.Size(1232, 554);
+                //grdProcess.Location = new System.Drawing.Point(17, 185);
+                //grdProcess.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right | System.Windows.Forms.AnchorStyles.Bottom;
                 grdEmployee.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right | System.Windows.Forms.AnchorStyles.Bottom;
-                grdEmployee.Size = new System.Drawing.Size(1232, 554);
-                grdEmployee.Location = new System.Drawing.Point(17, 185);
+                //grdEmployee.Size = new System.Drawing.Size(1232, 554);
+                //grdEmployee.Location = new System.Drawing.Point(17, 185);
                 if ((DateTime.Now.Year == 2025) && (DateTime.Now.Month == 1 || DateTime.Now.Month == 2 || DateTime.Now.Month == 3 || DateTime.Now.Month == 4 || DateTime.Now.Month == 5 || DateTime.Now.Month == 6))
                 { }
                 else { RadMessageBox.Show("Kindly contact AnsaarSoft, @ mfmlive@gmail.com"); Application.Exit(); }
