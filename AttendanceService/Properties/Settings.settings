@@ -2,26 +2,26 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="AttendanceService.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
+    <Setting Name="DBUser" Type="System.String" Scope="User">
+      <Value Profile="(Default)">sa</Value>
+    </Setting>
+    <Setting Name="AttDbUser" Type="System.String" Scope="User">
+      <Value Profile="(Default)">sa</Value>
+    </Setting>
     <Setting Name="ServerName" Type="System.String" Scope="User">
       <Value Profile="(Default)">MFMLAP</Value>
     </Setting>
     <Setting Name="Database" Type="System.String" Scope="User">
-      <Value Profile="(Default)">HCMTest</Value>
-    </Setting>
-    <Setting Name="DBUser" Type="System.String" Scope="User">
-      <Value Profile="(Default)">sa</Value>
+      <Value Profile="(Default)">HCMOneAV</Value>
     </Setting>
     <Setting Name="DBPassword" Type="System.String" Scope="User">
       <Value Profile="(Default)">super</Value>
     </Setting>
     <Setting Name="AttDbServer" Type="System.String" Scope="User">
-      <Value Profile="(Default)">HCMTest</Value>
+      <Value Profile="(Default)">MFMLAP</Value>
     </Setting>
     <Setting Name="AttDbDatabase" Type="System.String" Scope="User">
-      <Value Profile="(Default)">ScottyAttDB</Value>
-    </Setting>
-    <Setting Name="AttDbUser" Type="System.String" Scope="User">
-      <Value Profile="(Default)">sa</Value>
+      <Value Profile="(Default)">ODAttTest</Value>
     </Setting>
     <Setting Name="AttDbPassword" Type="System.String" Scope="User">
       <Value Profile="(Default)">super</Value>

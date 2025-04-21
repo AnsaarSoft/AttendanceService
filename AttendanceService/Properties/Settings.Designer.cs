@@ -25,6 +25,30 @@ namespace AttendanceService.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("sa")]
+        public string DBUser {
+            get {
+                return ((string)(this["DBUser"]));
+            }
+            set {
+                this["DBUser"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("sa")]
+        public string AttDbUser {
+            get {
+                return ((string)(this["AttDbUser"]));
+            }
+            set {
+                this["AttDbUser"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("MFMLAP")]
         public string ServerName {
             get {
@@ -37,25 +61,13 @@ namespace AttendanceService.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("HCMTest")]
+        [global::System.Configuration.DefaultSettingValueAttribute("HCMOneAV")]
         public string Database {
             get {
                 return ((string)(this["Database"]));
             }
             set {
                 this["Database"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("sa")]
-        public string DBUser {
-            get {
-                return ((string)(this["DBUser"]));
-            }
-            set {
-                this["DBUser"] = value;
             }
         }
         
@@ -73,7 +85,7 @@ namespace AttendanceService.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("HCMTest")]
+        [global::System.Configuration.DefaultSettingValueAttribute("MFMLAP")]
         public string AttDbServer {
             get {
                 return ((string)(this["AttDbServer"]));
@@ -85,25 +97,13 @@ namespace AttendanceService.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ScottyAttDB")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ODAttTest")]
         public string AttDbDatabase {
             get {
                 return ((string)(this["AttDbDatabase"]));
             }
             set {
                 this["AttDbDatabase"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("sa")]
-        public string AttDbUser {
-            get {
-                return ((string)(this["AttDbUser"]));
-            }
-            set {
-                this["AttDbUser"] = value;
             }
         }
         
