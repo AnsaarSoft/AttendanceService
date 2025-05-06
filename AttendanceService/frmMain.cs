@@ -24,6 +24,8 @@ using System.Globalization;
 using System.IO;
 using System.Net.Mail;
 using System.Reflection.Emit;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
+using UFFU;
 
 namespace AttendanceService
 {
@@ -191,80 +193,19 @@ namespace AttendanceService
                     FromEmp = (txtFromEmployeeCode.Text == "0" || string.IsNullOrEmpty(txtFromEmployeeCode.Text)) ? string.Empty : txtFromEmployeeCode.Text;
 
                     IEnumerable<MstEmployee> oCollection;
-                    if (string.IsNullOrEmpty(FromEmp) && string.IsNullOrEmpty(DepartmentValue) && string.IsNullOrEmpty(DesignationValue) && string.IsNullOrEmpty(LocationValue) && string.IsNullOrEmpty(BranchValue))
-                    {
-                        oCollection = (from a in odb.MstEmployee
-                                       where a.FlgActive == true
-                                       && a.ResignDate == null
-                                       && a.CfgPayrollDefination.PayrollName == PayrollValue
-                                       orderby a.ID
-                                       select a).ToList();
-                    }
-                    else if (string.IsNullOrEmpty(FromEmp) && string.IsNullOrEmpty(DepartmentValue) && string.IsNullOrEmpty(DesignationValue) && string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
-                    {
-                        oCollection = (from a in odb.MstEmployee
-                                       where a.FlgActive == true
-                                       && a.ResignDate == null
-                                       && a.MstBranches.Name == BranchValue
-                                       && a.CfgPayrollDefination.PayrollName == PayrollValue
-                                       orderby a.ID
-                                       select a).ToList();
-                    }
-                    else if (string.IsNullOrEmpty(FromEmp) && string.IsNullOrEmpty(DepartmentValue) && string.IsNullOrEmpty(DesignationValue) && !string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
-                    {
-                        oCollection = (from a in odb.MstEmployee
-                                       where a.FlgActive == true
-                                       && a.ResignDate == null
-                                       && a.MstLocation.Name == LocationValue
-                                       && a.MstBranches.Name == BranchValue
-                                       && a.CfgPayrollDefination.PayrollName == PayrollValue
-                                       orderby a.ID
-                                       select a).ToList();
-                    }
-                    else if (string.IsNullOrEmpty(FromEmp) && string.IsNullOrEmpty(DepartmentValue) && !string.IsNullOrEmpty(DesignationValue) && !string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
-                    {
-                        oCollection = (from a in odb.MstEmployee
-                                       where a.FlgActive == true
-                                       && a.ResignDate == null
-                                       && a.MstDesignation.Name == DesignationValue
-                                       && a.MstLocation.Name == LocationValue
-                                       && a.MstBranches.Name == BranchValue
-                                       && a.CfgPayrollDefination.PayrollName == PayrollValue
-                                       orderby a.ID
-                                       select a).ToList();
-                    }
-                    else if (string.IsNullOrEmpty(FromEmp) && !string.IsNullOrEmpty(DepartmentValue) && !string.IsNullOrEmpty(DesignationValue) && !string.IsNullOrEmpty(LocationValue) && !string.IsNullOrEmpty(BranchValue))
-                    {
-                        oCollection = (from a in odb.MstEmployee
-                                       where a.FlgActive == true
-                                       && a.ResignDate == null
-                                       && a.MstDepartment.DeptName == DepartmentValue
-                                       && a.MstDesignation.Name == DesignationValue
-                                       && a.MstLocation.Name == LocationValue
-                                       && a.MstBranches.Name == BranchValue
-                                       && a.CfgPayrollDefination.PayrollName == PayrollValue
-                                       orderby a.ID
-                                       select a).ToList();
-                    }
-                    else if (!string.IsNullOrEmpty(FromEmp))
-                    {
-                        oCollection = (from a in odb.MstEmployee
-                                       where a.FlgActive == true
-                                       && a.ResignDate == null
-                                       && a.CfgPayrollDefination.PayrollName == PayrollValue
-                                       && a.EmpID == FromEmp
-                                       orderby a.ID
-                                       select a).ToList();
-                    }
-                    else
-                    {
-                        oCollection = (from a in odb.MstEmployee
-                                       where a.FlgActive == true
-                                       && a.ResignDate == null
-                                       && a.CfgPayrollDefination.PayrollName == PayrollValue
-                                       orderby a.ID
-                                       select a).ToList();
-                    }
+
+                    oCollection = (from a in odb.MstEmployee
+                                   where a.FlgActive == true
+                                   && a.ResignDate == null
+                                   && a.CfgPayrollDefination.PayrollName == PayrollValue
+                                   && (string.IsNullOrEmpty(DepartmentValue) || a.DepartmentName == DepartmentValue)
+                                   && (string.IsNullOrEmpty(DesignationValue) || a.DesignationName == DesignationValue)
+                                   && (string.IsNullOrEmpty(LocationValue) || a.LocationName == LocationValue)
+                                   && (string.IsNullOrEmpty(BranchValue) || a.BranchName == BranchValue)
+                                   && (string.IsNullOrEmpty(FromEmp) || a.EmpID == FromEmp)
+                                   orderby a.ID
+                                   select a).ToList();
+
                     if (oCollection.Count() > 0)
                     {
                         foreach (var emp in oCollection)
@@ -690,7 +631,7 @@ namespace AttendanceService
                                 {
                                     var oLT = (from a in oLeaveBal
                                                where a.Balance > 0
-                                               && a.LeaveType == "ABSENT"
+                                               && a.LeaveType.ToLower() == "absent"
                                                select a).FirstOrDefault();
                                     if (oLT == null) { RadMessageBox.Show("Leave type not assign to employee Absent."); continue; }
                                     flgNewLeave = true;
@@ -725,7 +666,7 @@ namespace AttendanceService
                                 {
                                     var oLT = (from a in oLeaveBal
                                                where a.Balance > 0
-                                               && a.LeaveType == "ABSENT"
+                                               && a.LeaveType.ToLower() == "absent"
                                                select a).FirstOrDefault();
                                     if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
                                     flgNewLeave = true;
@@ -1724,10 +1665,20 @@ namespace AttendanceService
                     var oShift = (from a in odb.MstShifts where a.Description == ShiftDesc select a).FirstOrDefault();
                     if (oShift is null) { logger.Info($"shift not found, ProcessLine employee {EmpCode}"); return; }
 
+                    var oCalendar = (from a in odb.MstCalendar
+                                     where a.FlgActive == true
+                                     select a).FirstOrDefault();
+
+                    if (oCalendar is null)
+                    {
+                        logger.Info("calendar not active or define.");
+                        return;
+                    }
+
                     #region GetEmployeeLeaves
                     var oEmpLeave = (from a in odb.MstEmployeeLeaves
                                      where a.EmpID == oEmp.ID
-                                     && a.LeaveCalCode == "FY_23_24"
+                                     && a.LeaveCalCode == oCalendar.Code
                                      && a.LeavesEntitled > 0
                                      select a).ToList();
                     List<LeaveStructure> oLeaveBal = new List<LeaveStructure>();
@@ -1858,7 +1809,7 @@ namespace AttendanceService
                         {
                             var oLT = (from a in oLeaveBal
                                        where a.Balance > 0
-                                       && a.LeaveType == "ABSENT"
+                                       && a.LeaveType.ToLower() == "absent"
                                        select a).FirstOrDefault();
                             flgNewLeave = true;
                             LeaveHour = ShiftHour;
@@ -1892,7 +1843,7 @@ namespace AttendanceService
                         {
                             var oLT = (from a in oLeaveBal
                                        where a.Balance > 0
-                                       && a.LeaveType == "ABSENT"
+                                       && a.LeaveType.ToLower() == "absent"
                                        select a).FirstOrDefault();
                             flgNewLeave = true;
                             LeaveHour = ShiftHour;
@@ -2343,84 +2294,87 @@ namespace AttendanceService
             {
                 logger.Error(ex);
             }
-            
-            //    ReportDocument report = new ReportDocument();
-            //    report.Load(Application.StartupPath + "\\test.rpt");
-            //    Program.SetReport(report);
-            //    if (isSystem)
-            //    {
-            //        ParameterFieldDefinitions fielDef = report.DataDefinition.ParameterFields;
-            //        ParameterDiscreteValue discVal1 = new ParameterDiscreteValue();
-            //        ParameterFieldDefinition fielLoc1 = fielDef["Critaria"];
-            //        ParameterValues paraVals1 = new ParameterValues();
-            //        paraVals1 = fielLoc1.CurrentValues;
-            //        discVal1.Value = string.Format("Where TrnsSalaryProcessRegister.Id in({0})", slip.Id);
-            //        //discVal1.Value = Critaria;                            
-            //        paraVals1.Add(discVal1);
-            //        fielLoc1.ApplyCurrentValues(paraVals1);
-            //    }
-            //    System.Drawing.Printing.PrintDocument doctoprint = new System.Drawing.Printing.PrintDocument();
-            //    report.PrintOptions.PrinterName = doctoprint.DefaultPageSettings.PrinterSettings.PrinterName;
-            //    //crystalReportViewer1.ReportSource = report;
-            //    //  report.Dispose();
-            //    ExportOptions CrExportOptions;
-            //    DiskFileDestinationOptions CrDiskFileDestinationOptions = new DiskFileDestinationOptions();
-            //    PdfRtfWordFormatOptions CrFormatTypeOptions = new PdfRtfWordFormatOptions();
-            //    CrDiskFileDestinationOptions.DiskFileName = Application.StartupPath + "\\test.pdf";
-            //    CrExportOptions = report.ExportOptions;
-            //    CrExportOptions.ExportDestinationType = ExportDestinationType.DiskFile;
-            //    CrExportOptions.ExportFormatType = ExportFormatType.PortableDocFormat;
-            //    CrExportOptions.DestinationOptions = CrDiskFileDestinationOptions;
-            //    CrExportOptions.FormatOptions = CrFormatTypeOptions;
-            //    report.Export();
-            //    var email = dbHrPayroll.MstEmailConfig.FirstOrDefault();
-            //    string MonthName = Convert.ToDateTime(slip.CfgPeriodDates.StartDate)
-            //        .ToString("MMMM", CultureInfo.InvariantCulture);
-            //    string YearName = Convert.ToDateTime(slip.CfgPeriodDates.StartDate)
-            //        .ToString("yyyy", CultureInfo.InvariantCulture);
-            //    string EmpName = slip.MstEmployee.FirstName + " " + (!string.IsNullOrEmpty(slip.MstEmployee.MiddleName) ? slip.MstEmployee.MiddleName + " " : "") + slip.MstEmployee.LastName;
-            //    MailMessage mail = new MailMessage(email.FromEmail, slip.MstEmployee.OfficeEmail,
-            //    string.Format("Salary Slip for month of {0}", MonthName),
-            //    string.Format(@"<b>Dear {0}</b>,
-            //                            <br> 
-            //                            <br> 
-            //                            Please find attached your pay-slip, for the month of {1} {2}.<br><br>
-            //                            In case of any ambiguity, please consult HR Department for resolution of your queries.<br><br>
-            //                            <b>This is a SAP generated pay-slip and does not require any signature.</b><br>
-            //                            <br>
-            //                            <b>Best Regards,</b><br>
-            //                            <br>
-            //                            <b>HR Department.</b>", EmpName, MonthName, YearName));
-            //    mail.IsBodyHtml = true;
-            //    try
-            //    {
-            //        Attachment attachment = new Attachment(Application.StartupPath + "\\test.pdf");
-            //        attachment.Name = slip.PeriodName + " " + EmpName + ".pdf";  // set name here
-            //        mail.Attachments.Add(attachment);
-            //        //mail.Attachments.Add(new Attachment(Application.StartupPath + "\\test.pdf"));
-            //        SmtpClient client = new SmtpClient(email.SMTPServer);
-            //        client.Port = Convert.ToInt32(email.SMTPort);
-            //        client.Credentials = new System.Net.NetworkCredential(email.FromEmail, email.Password);
-            //        //if (email.TestEmail.ToLower().Trim() == "y")
-            //        if (Convert.ToBoolean(email.SSL) == true)
-            //        {
-            //            client.EnableSsl = true;
-            //        }
-            //        else
-            //        {
-            //            client.EnableSsl = false;
-            //        }
-            //        client.Send(mail);
-            //        mail.Dispose();
-            //        slip.FlgEmailed = true;
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        mail.Dispose();
+        }
+        void SendAttendanceSlip(int PeriodId, string PeriodName,  string EmpId, string EmpName, string EmpEmail, DateTime PeriodStartDate)
+        {
+            try
+            {
+                using (var odb = new dbHRMS(ConnectionString))
+                {
+                    string filename = Application.StartupPath + "\\Report\\AttendanceReport.rpt";
+                    ReportDocument oReportDoc = new ReportDocument();
+                    oReportDoc.Load(filename);
+                    //Set databasevalues.
+                    SetReport(oReportDoc);
+                    ParameterFieldDefinitions fielddefination = oReportDoc.DataDefinition.ParameterFields;
+                    ParameterDiscreteValue prmValue = new ParameterDiscreteValue();
+                    ParameterFieldDefinition prmDef = fielddefination["Critaria"];
+                    ParameterValues prmCollection = new ParameterValues();
+                    prmCollection = prmDef.CurrentValues;
+                    prmValue.Value = string.Format(" WHERE  A1.PeriodID= {0} and A2.EmpID= '{1}' ",PeriodId, EmpId);
+                    prmCollection.Add(prmValue);
+                    prmDef.ApplyCurrentValues(prmCollection);
 
-            //    }
-            //    //progressBar1.PerformStep();
-            //}
+                    ExportOptions CrExportOptions;
+                    DiskFileDestinationOptions CrDiskFileDestinationOptions = new DiskFileDestinationOptions();
+                    PdfRtfWordFormatOptions CrFormatTypeOptions = new PdfRtfWordFormatOptions();
+                    CrDiskFileDestinationOptions.DiskFileName = Application.StartupPath + $"\\{EmpId}.pdf";
+                    CrExportOptions = oReportDoc.ExportOptions;
+                    CrExportOptions.ExportDestinationType = ExportDestinationType.DiskFile;
+                    CrExportOptions.ExportFormatType = ExportFormatType.PortableDocFormat;
+                    CrExportOptions.DestinationOptions = CrDiskFileDestinationOptions;
+                    CrExportOptions.FormatOptions = CrFormatTypeOptions;
+                    oReportDoc.Export();
+
+                    var email = odb.MstEmailConfig.FirstOrDefault();
+                    string MonthName = Convert.ToDateTime(PeriodStartDate).ToString("MMMM", CultureInfo.InvariantCulture);
+                    string YearName = Convert.ToDateTime(PeriodStartDate).ToString("yyyy", CultureInfo.InvariantCulture);
+
+                    MailMessage mail = new MailMessage(email.FromEmail, EmpEmail,
+                    string.Format("Attendance Slip for month of {0}", MonthName),
+                    string.Format(@"<b>Dear {0}</b>,
+                                                <br> 
+                                                <br> 
+                                                Please find attached your Attendance-slip, for the month of {1} {2}.<br><br>
+                                                In case of any ambiguity, please consult HR Department for resolution of your queries.<br><br>
+                                                <b>This is a SAP generated Attendance-slip and does not require any signature.</b><br>
+                                                <br>
+                                                <b>Best Regards,</b><br>
+                                                <br>
+                                                <b>HR Department.</b>", EmpName, MonthName, YearName));
+                    mail.IsBodyHtml = true;
+                    try
+                    {
+                        Attachment attachment = new Attachment(Application.StartupPath + $"\\{EmpId}.pdf");
+                        attachment.Name = PeriodName + " " + EmpName + ".pdf";  // set name here
+                        mail.Attachments.Add(attachment);
+                        //mail.Attachments.Add(new Attachment(Application.StartupPath + "\\test.pdf"));
+                        SmtpClient client = new SmtpClient(email.SMTPServer);
+                        client.Port = Convert.ToInt32(email.SMTPort);
+                        client.Credentials = new System.Net.NetworkCredential(email.FromEmail, email.Password);
+                        //if (email.TestEmail.ToLower().Trim() == "y")
+                        if (Convert.ToBoolean(email.SSL) == true)
+                        {
+                            client.EnableSsl = true;
+                        }
+                        else
+                        {
+                            client.EnableSsl = false;
+                        }
+                        client.Send(mail);
+                        mail.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        mail.Dispose();
+                        logger.Error(ex);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
         }
         void SetReport(ReportDocument rep)
         {
@@ -2464,6 +2418,38 @@ namespace AttendanceService
                     #endregion
 
                 }
+            }
+        }
+        public bool ValidateLicense(string key)
+        {
+            try
+            {
+                bool resultValue = false;
+                string result = mFm.mfmVerifyLicense(key);
+                //result = "Verification Succeded";
+                switch (result)
+                {
+                    case "Verification Succeded":
+                        resultValue = true;
+                        break;
+                    default:
+                        resultValue = false;
+                        break;
+                }
+                if (!resultValue)
+                {
+                    logger.Info("License expires. renew you license.");
+                }
+                else
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+                return false;
             }
         }
         #endregion
@@ -2549,9 +2535,14 @@ namespace AttendanceService
                 grdEmployee.Size = new System.Drawing.Size(1390, 480);
                 grdEmployee.Location = new System.Drawing.Point(19, 260);
                 grdEmployee.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right | System.Windows.Forms.AnchorStyles.Bottom;
-                if ((DateTime.Now.Year == 2025) && (DateTime.Now.Month == 1 || DateTime.Now.Month == 2 || DateTime.Now.Month == 3 || DateTime.Now.Month == 4 || DateTime.Now.Month == 5 || DateTime.Now.Month == 6))
-                { }
-                else { RadMessageBox.Show("Kindly contact AnsaarSoft, @ mfmlive@gmail.com"); Application.Exit(); }
+
+                logger.Info("System hardware key: {0}", mFm.mfmGetSystemID());
+                if (!ValidateLicense(Settings.Default.LicenseKey))
+                {
+                    RadMessageBox.Show("Kindly contact AnsaarSoft, @ mfmlive@gmail.com");
+                    logger.Info("license expired or invalid.");
+                    Application.Exit();
+                }
                 this.Text = "Attendance Process ver " + Application.ProductVersion;
             }
             catch (Exception ex)
@@ -2855,21 +2846,37 @@ namespace AttendanceService
             {
                 using (var odb = new dbHRMS(ConnectionString))
                 {
-                    var FirstEmployee = (from a in dtEmployees.AsEnumerable()
-                                         where a.Field<bool>("Select") == true
-                                         select a).FirstOrDefault();
-                    if (FirstEmployee is null) { RadMessageBox.Show("Select atleast one employee."); }
+                    var EmployeeList = (from a in dtEmployees.AsEnumerable()
+                                        where a.Field<bool>("Select") == true
+                                        select a).ToList();
+                    if (EmployeeList is null) { RadMessageBox.Show("Select atleast one employee."); }
                     string payrollvalue = cmbPayroll.SelectedItem.ToString();
                     string periodvalue = cmbPeriod.SelectedItem.ToString();
-                    var oEmp = (from a in odb.MstEmployee
-                                where a.EmpID == FirstEmployee.Field<string>("EmpCode")
-                                select a).FirstOrDefault();
-                    var oPeriod = (from a in odb.CfgPeriodDates
-                                   where a.PeriodName == periodvalue
-                                   && a.CfgPayrollDefination.PayrollName == payrollvalue
-                                   select a).FirstOrDefault();
+                    lblStart.Text = "Sending Emails Attendance Slip to employees please wait.";
+                    foreach (var SingleEmployee in EmployeeList)
+                    {
+                        var oEmp = (from a in odb.MstEmployee
+                                    where a.EmpID == SingleEmployee.Field<string>("EmpCode")
+                                    select a).FirstOrDefault();
+                        var oPeriod = (from a in odb.CfgPeriodDates
+                                       where a.PeriodName == periodvalue
+                                       && a.CfgPayrollDefination.PayrollName == payrollvalue
+                                       select a).FirstOrDefault();
+                        var SlipId = (from a in odb.TrnsSalaryProcessRegister
+                                      where a.EmpID == oEmp.ID
+                                      && a.PayrollPeriodID == oPeriod.ID
+                                      select a).FirstOrDefault();
+                        if (string.IsNullOrWhiteSpace(oEmp.OfficeEmail))
+                        {
+                            logger.Log(LogLevel.Warn, $"email not define emp code {oEmp.EmpID}");
+                            continue;
+                        }
+                        string EmpName = string.Concat(oEmp.FirstName, " ", oEmp.MiddleName, " ", oEmp.LastName);
+                        //SendSalarySlip(SlipId.Id, oPeriod.PeriodName, oPeriod.StartDate.GetValueOrDefault(), EmpName, oEmp.OfficeEmail);
+                        SendAttendanceSlip(oPeriod.ID, oPeriod.PeriodName, oEmp.EmpID, EmpName, oEmp.OfficeEmail, oPeriod.StartDate.GetValueOrDefault());
+                    }
 
-
+                    lblStart.Text = "Process completed.";
                 }
             }
             catch (Exception ex)

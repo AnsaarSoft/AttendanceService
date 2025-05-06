@@ -40,8 +40,8 @@ namespace AttendanceService.Properties
         {
             try
             {
-                this.TopMost = true;
-                this.WindowState = FormWindowState.Maximized;
+                //this.TopMost = true;
+                //this.WindowState = FormWindowState.Maximized;
                 oDocument = new ReportDocument();
                 if(ReportCode == 1)
                 {

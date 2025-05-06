@@ -118,5 +118,19 @@ namespace AttendanceService.Properties {
                 this["AttDbPassword"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("xeZfqgv6rwVG+4C1QqkuXavYsdgBdA18m5ClcIhQUq7ev5NZvva9wh5QNnlOg3DrWej7iVLrATnRZaBc/" +
+            "S1U2EUpoI+2Ih2MjFwhqXvIEdQi607WVGHXDHz0S2DxhMj26v1WZyEXj/T+kmw3bjqjT5jnJI8hwo8Lf" +
+            "VyrPVQjdDw=")]
+        public string LicenseKey {
+            get {
+                return ((string)(this["LicenseKey"]));
+            }
+            set {
+                this["LicenseKey"] = value;
+            }
+        }
     }
 }

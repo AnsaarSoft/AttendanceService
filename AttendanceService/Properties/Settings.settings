@@ -26,5 +26,8 @@
     <Setting Name="AttDbPassword" Type="System.String" Scope="User">
       <Value Profile="(Default)">super</Value>
     </Setting>
+    <Setting Name="LicenseKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">xeZfqgv6rwVG+4C1QqkuXavYsdgBdA18m5ClcIhQUq7ev5NZvva9wh5QNnlOg3DrWej7iVLrATnRZaBc/S1U2EUpoI+2Ih2MjFwhqXvIEdQi607WVGHXDHz0S2DxhMj26v1WZyEXj/T+kmw3bjqjT5jnJI8hwo8LfVyrPVQjdDw=</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
