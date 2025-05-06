@@ -22,6 +22,7 @@ namespace AttendanceService.Properties
         public int ReportCode = 0;
         public string PeriodCode = "173";
         public string EmpCode = "14";
+        public string EmpList = "";
         public string FromDate = "";
         public string ToDate = "";
         ReportDocument oDocument;
@@ -48,7 +49,7 @@ namespace AttendanceService.Properties
                     string filepath = Path.Combine(Environment.CurrentDirectory.ToString(),"Report", "AttendanceReport.rpt");
                     oDocument.Load(filepath);
                     oDocument.SetDatabaseLogon(Settings.Default.DBUser, Settings.Default.DBPassword, Settings.Default.ServerName, Settings.Default.Database);
-                    oDocument.SetParameterValue("Critaria", $" WHERE  A1.PeriodID={PeriodCode} and A2.EmpID='{EmpCode}'");
+                    oDocument.SetParameterValue("Critaria", $" WHERE  A1.PeriodID={PeriodCode} and A2.EmpID In ({EmpCode})");
                     rptViewer.ReportSource = oDocument;
                 }
                 else
@@ -56,7 +57,7 @@ namespace AttendanceService.Properties
                     string filepath = Path.Combine(Environment.CurrentDirectory.ToString(), "Report", "TempAttendanceReport.rpt");
                     oDocument.Load(filepath);
                     oDocument.SetDatabaseLogon(Settings.Default.DBUser, Settings.Default.DBPassword, Settings.Default.ServerName, Settings.Default.Database);
-                    oDocument.SetParameterValue("Critaria", $" WHERE A1.EmpID = '{EmpCode}' AND A4.PunchedDate BETWEEN '{FromDate}' AND '{ToDate}'");
+                    oDocument.SetParameterValue("Critaria", $" WHERE A1.EmpID In ({EmpCode}) AND A4.PunchedDate BETWEEN '{FromDate}' AND '{ToDate}'");
                     rptViewer.ReportSource = oDocument;
                 }
             }

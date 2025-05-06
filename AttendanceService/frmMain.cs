@@ -2200,7 +2200,7 @@ namespace AttendanceService
                 logger.Error(ex);
             }
         }
-        void SendSalarySlip(int SlipId,string PeriodName, DateTime PeriodStartDate, string EmpName, string EmpEmail)
+        void SendSalarySlip(int SlipId, string PeriodName, DateTime PeriodStartDate, string EmpName, string EmpEmail)
         {
             try
             {
@@ -2214,10 +2214,10 @@ namespace AttendanceService
                     }
                     byte[] reportinbytes = oReport.RptFileStr.ToArray();
                     string filename = Application.StartupPath + "\\SlipRpt.rpt";
-                    using(FileStream fs = new FileStream(filename, FileMode.Create))
+                    using (FileStream fs = new FileStream(filename, FileMode.Create))
                     {
                         int filelenght = reportinbytes.Length;
-                        fs.Write(reportinbytes,0, filelenght);
+                        fs.Write(reportinbytes, 0, filelenght);
                         fs.Flush();
                         fs.Close();
                     }
@@ -2248,7 +2248,7 @@ namespace AttendanceService
                     var email = odb.MstEmailConfig.FirstOrDefault();
                     string MonthName = Convert.ToDateTime(PeriodStartDate).ToString("MMMM", CultureInfo.InvariantCulture);
                     string YearName = Convert.ToDateTime(PeriodStartDate).ToString("yyyy", CultureInfo.InvariantCulture);
-                    
+
                     MailMessage mail = new MailMessage(email.FromEmail, EmpEmail,
                     string.Format("Salary Slip for month of {0}", MonthName),
                     string.Format(@"<b>Dear {0}</b>,
@@ -2295,7 +2295,7 @@ namespace AttendanceService
                 logger.Error(ex);
             }
         }
-        void SendAttendanceSlip(int PeriodId, string PeriodName,  string EmpId, string EmpName, string EmpEmail, DateTime PeriodStartDate)
+        void SendAttendanceSlip(int PeriodId, string PeriodName, string EmpId, string EmpName, string EmpEmail, DateTime PeriodStartDate)
         {
             try
             {
@@ -2311,7 +2311,7 @@ namespace AttendanceService
                     ParameterFieldDefinition prmDef = fielddefination["Critaria"];
                     ParameterValues prmCollection = new ParameterValues();
                     prmCollection = prmDef.CurrentValues;
-                    prmValue.Value = string.Format(" WHERE  A1.PeriodID= {0} and A2.EmpID= '{1}' ",PeriodId, EmpId);
+                    prmValue.Value = string.Format(" WHERE  A1.PeriodID= {0} and A2.EmpID= '{1}' ", PeriodId, EmpId);
                     prmCollection.Add(prmValue);
                     prmDef.ApplyCurrentValues(prmCollection);
 
@@ -2450,6 +2450,78 @@ namespace AttendanceService
             {
                 logger.Error(ex);
                 return false;
+            }
+        }
+        void CallAttendanceReport()
+        {
+            try
+            {
+                using (var db = new dbHRMS(ConnectionString))
+                {
+                    var EmployeeList = (from a in dtEmployees.AsEnumerable()
+                                         where a.Field<bool>("Select") == true
+                                         select a.Field<string>("EmpCode")).ToList();
+                    if(EmployeeList.Count > 0)
+                    {
+                        string payrollvalue = cmbPayroll.SelectedItem.ToString();
+                        string periodvalue = cmbPeriod.SelectedItem.ToString();
+                        var oPeriod = (from a in db.CfgPeriodDates
+                                       where a.PeriodName == periodvalue
+                                       && a.CfgPayrollDefination.PayrollName == payrollvalue
+                                       select a).FirstOrDefault();
+
+                        string[] arr = EmployeeList.ToArray();
+                        string formatted = string.Join(", ", arr.Select(s => $"'{s}'"));
+
+                        frmReportViewer oDialog = new frmReportViewer();
+                        oDialog.ReportCode = 1;
+                        oDialog.EmpCode = "";
+                        oDialog.EmpList = formatted;
+                        oDialog.PeriodCode = oPeriod.ID.ToString();
+                        oDialog.ShowDialog();
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+        void CallTempAttendanceReport()
+        {
+            try
+            {
+                using (var db = new dbHRMS(ConnectionString))
+                {
+                    var EmployeeList = (from a in dtEmployees.AsEnumerable()
+                                        where a.Field<bool>("Select") == true
+                                        select a.Field<string>("EmpCode")).ToList();
+                    if (EmployeeList.Count > 0)
+                    {
+                        string payrollvalue = cmbPayroll.SelectedItem.ToString();
+                        string periodvalue = cmbPeriod.SelectedItem.ToString();
+                        var oPeriod = (from a in db.CfgPeriodDates
+                                       where a.PeriodName == periodvalue
+                                       && a.CfgPayrollDefination.PayrollName == payrollvalue
+                                       select a).FirstOrDefault();
+
+                        string[] arr = EmployeeList.ToArray();
+                        string formatted = string.Join(", ", arr.Select(s => $"'{s}'"));
+
+                        frmReportViewer oDialog = new frmReportViewer();
+                        oDialog.ReportCode = 2;
+                        oDialog.EmpCode = "";
+                        oDialog.EmpList = formatted;
+                        oDialog.PeriodCode = oPeriod.ID.ToString();
+                        oDialog.ShowDialog();
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
             }
         }
         #endregion
@@ -2736,28 +2808,29 @@ namespace AttendanceService
         {
             try
             {
-                using (var odb = new dbHRMS(ConnectionString))
-                {
-                    var FirstEmployee = (from a in dtEmployees.AsEnumerable()
-                                         where a.Field<bool>("Select") == true
-                                         select a).FirstOrDefault();
-                    if (FirstEmployee is null) { RadMessageBox.Show("Select atleast one employee."); }
-                    string payrollvalue = cmbPayroll.SelectedItem.ToString();
-                    string periodvalue = cmbPeriod.SelectedItem.ToString();
-                    var oEmp = (from a in odb.MstEmployee
-                                where a.EmpID == FirstEmployee.Field<string>("EmpCode")
-                                select a).FirstOrDefault();
-                    var oPeriod = (from a in odb.CfgPeriodDates
-                                   where a.PeriodName == periodvalue
-                                   && a.CfgPayrollDefination.PayrollName == payrollvalue
-                                   select a).FirstOrDefault();
+                //using (var odb = new dbHRMS(ConnectionString))
+                //{
+                //    var FirstEmployee = (from a in dtEmployees.AsEnumerable()
+                //                         where a.Field<bool>("Select") == true
+                //                         select a).FirstOrDefault();
+                //    if (FirstEmployee is null) { RadMessageBox.Show("Select atleast one employee."); }
+                //    string payrollvalue = cmbPayroll.SelectedItem.ToString();
+                //    string periodvalue = cmbPeriod.SelectedItem.ToString();
+                //    var oEmp = (from a in odb.MstEmployee
+                //                where a.EmpID == FirstEmployee.Field<string>("EmpCode")
+                //                select a).FirstOrDefault();
+                //    var oPeriod = (from a in odb.CfgPeriodDates
+                //                   where a.PeriodName == periodvalue
+                //                   && a.CfgPayrollDefination.PayrollName == payrollvalue
+                //                   select a).FirstOrDefault();
 
-                    frmReportViewer oDialog = new frmReportViewer();
-                    oDialog.ReportCode = 1;
-                    oDialog.EmpCode = oEmp.EmpID;
-                    oDialog.PeriodCode = oPeriod.ID.ToString();
-                    oDialog.ShowDialog();
-                }
+                //    frmReportViewer oDialog = new frmReportViewer();
+                //    oDialog.ReportCode = 1;
+                //    oDialog.EmpCode = oEmp.EmpID;
+                //    oDialog.PeriodCode = oPeriod.ID.ToString();
+                //    oDialog.ShowDialog();
+                //}
+                CallAttendanceReport();
             }
             catch (Exception ex)
             {
@@ -2768,29 +2841,30 @@ namespace AttendanceService
         {
             try
             {
-                using (var odb = new dbHRMS(ConnectionString))
-                {
-                    var FirstEmployee = (from a in dtEmployees.AsEnumerable()
-                                         where a.Field<bool>("Select") == true
-                                         select a).FirstOrDefault();
-                    if (FirstEmployee is null) { RadMessageBox.Show("Select atleast one employee."); }
-                    string payrollvalue = cmbPayroll.SelectedItem.ToString();
-                    string periodvalue = cmbPeriod.SelectedItem.ToString();
-                    var oEmp = (from a in odb.MstEmployee
-                                where a.EmpID == FirstEmployee.Field<string>("EmpCode")
-                                select a).FirstOrDefault();
-                    var oPeriod = (from a in odb.CfgPeriodDates
-                                   where a.PeriodName == periodvalue
-                                   && a.CfgPayrollDefination.PayrollName == payrollvalue
-                                   select a).FirstOrDefault();
+                //using (var odb = new dbHRMS(ConnectionString))
+                //{
+                //    var FirstEmployee = (from a in dtEmployees.AsEnumerable()
+                //                         where a.Field<bool>("Select") == true
+                //                         select a).FirstOrDefault();
+                //    if (FirstEmployee is null) { RadMessageBox.Show("Select atleast one employee."); }
+                //    string payrollvalue = cmbPayroll.SelectedItem.ToString();
+                //    string periodvalue = cmbPeriod.SelectedItem.ToString();
+                //    var oEmp = (from a in odb.MstEmployee
+                //                where a.EmpID == FirstEmployee.Field<string>("EmpCode")
+                //                select a).FirstOrDefault();
+                //    var oPeriod = (from a in odb.CfgPeriodDates
+                //                   where a.PeriodName == periodvalue
+                //                   && a.CfgPayrollDefination.PayrollName == payrollvalue
+                //                   select a).FirstOrDefault();
 
-                    frmReportViewer oDialog = new frmReportViewer();
-                    oDialog.ReportCode = 2;
-                    oDialog.EmpCode = oEmp.EmpID;
-                    oDialog.FromDate = oPeriod.StartDate.Value.ToString("yyyy-MM-dd");
-                    oDialog.ToDate = oPeriod.EndDate.Value.ToString("yyyy-MM-dd");
-                    oDialog.ShowDialog();
-                }
+                //    frmReportViewer oDialog = new frmReportViewer();
+                //    oDialog.ReportCode = 2;
+                //    oDialog.EmpCode = oEmp.EmpID;
+                //    oDialog.FromDate = oPeriod.StartDate.Value.ToString("yyyy-MM-dd");
+                //    oDialog.ToDate = oPeriod.EndDate.Value.ToString("yyyy-MM-dd");
+                //    oDialog.ShowDialog();
+                //}
+                CallTempAttendanceReport();
             }
             catch (Exception ex)
             {
