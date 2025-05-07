@@ -366,6 +366,7 @@ namespace AttendanceService
                     //DateTime loopEnd = oPeriod.EndDate.GetValueOrDefault();
                     DateTime loopEnd = dtTo.Value;
                     int ShortLeave = 0;
+                    int PenaltyCount = 0;
                     var oAttendanceRule = (from a in odb.MstAttendanceRule
                                            select a).FirstOrDefault();
                     for (DateTime i = loopStart; i <= loopEnd; i = i.AddDays(1))
@@ -399,6 +400,7 @@ namespace AttendanceService
                             bool flgEarlyIn = false, flgEarlyOut = false, flgLateIn = false, flgLateOut = false;
                             string EarlyIn = string.Empty, EarlyOut = string.Empty, LateIn = string.Empty, LateOut = string.Empty;
                             bool flgNewLeave = false;
+                            bool flgFullDayLeave = false;
                             string LeaveHour = string.Empty, LeaveType = string.Empty;
                             int LeaveTypeID = 0;
                             decimal LeaveCount = 0;
@@ -653,6 +655,7 @@ namespace AttendanceService
                                     LeaveCount = 1;
                                     LeaveTypeID = oLeaveRequest.LeaveType ?? 0;
                                 }
+                                flgFullDayLeave = true;
                             }
 
                             //Missing timein or timeout
@@ -783,7 +786,8 @@ namespace AttendanceService
                                 if (LeaveCheck == 0)
                                 {
                                     //short leave working
-                                    if (ShortLeave % 2 == 0)
+                                    //if (ShortLeave % 2 == 0)
+                                    if(DeductionRule == "DR_01")
                                     {
                                         var oLT = (from a in oLeaveBal
                                                    where a.Balance > 0
@@ -840,6 +844,39 @@ namespace AttendanceService
                                 }
                             }
 
+                            //Missing In/Out Penalty
+                            if ((iTimeIn == 0 || iTimeOut == 0) && iShiftDuration > 0 && !flgFullDayLeave)
+                            {
+                                string DeductionRule = string.Empty;
+
+                                if (oAttendanceRule.FlgMissingTimePenalty.GetValueOrDefault())
+                                {
+                                    DeductionRule = "DR_04";
+                                    PenaltyCount += 1;
+                                }
+                                if (PenaltyCount >= oAttendanceRule.MissingTimePanaltyCounter.GetValueOrDefault())
+                                {
+                                    PenaltyCount = 0;
+                                    MstLeaveType oLeaveMaster = null;
+                                    if (DeductionRule == "DR_04")
+                                    {
+                                        oLeaveMaster = (from a in odb.MstLeaveType where a.Code == oAttendanceRule.MPTLeaveType select a).FirstOrDefault();
+                                    }
+                                    else
+                                    {
+                                        oLeaveMaster = (from a in odb.MstLeaveType where a.Code == oAttendanceRule.LeaveTypeWOP select a).FirstOrDefault();
+                                    }
+                                    if (oLeaveMaster != null)
+                                    {
+                                        flgNewLeave = true;
+                                        LeaveHour = ShiftDuration;
+                                        LeaveType = oLeaveMaster.Description;
+                                        LeaveTypeID = oLeaveMaster.ID;
+                                        LeaveCount = 0.5M;
+                                    }
+
+                                }
+                            }
 
                             #endregion
 
@@ -2459,9 +2496,9 @@ namespace AttendanceService
                 using (var db = new dbHRMS(ConnectionString))
                 {
                     var EmployeeList = (from a in dtEmployees.AsEnumerable()
-                                         where a.Field<bool>("Select") == true
-                                         select a.Field<string>("EmpCode")).ToList();
-                    if(EmployeeList.Count > 0)
+                                        where a.Field<bool>("Select") == true
+                                        select a.Field<string>("EmpCode")).ToList();
+                    if (EmployeeList.Count > 0)
                     {
                         string payrollvalue = cmbPayroll.SelectedItem.ToString();
                         string periodvalue = cmbPeriod.SelectedItem.ToString();
