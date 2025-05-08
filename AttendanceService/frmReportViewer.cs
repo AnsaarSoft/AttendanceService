@@ -41,15 +41,21 @@ namespace AttendanceService.Properties
         {
             try
             {
-                //this.TopMost = true;
-                //this.WindowState = FormWindowState.Maximized;
+#if DEBUG
+
+                this.TopMost = false;
+                this.WindowState = FormWindowState.Normal;
+#else
+                this.TopMost = true;
+                this.WindowState = FormWindowState.Maximized;
+#endif
                 oDocument = new ReportDocument();
-                if(ReportCode == 1)
+                if (ReportCode == 1)
                 {
-                    string filepath = Path.Combine(Environment.CurrentDirectory.ToString(),"Report", "AttendanceReport.rpt");
+                    string filepath = Path.Combine(Environment.CurrentDirectory.ToString(), "Report", "AttendanceReport.rpt");
                     oDocument.Load(filepath);
                     oDocument.SetDatabaseLogon(Settings.Default.DBUser, Settings.Default.DBPassword, Settings.Default.ServerName, Settings.Default.Database);
-                    oDocument.SetParameterValue("Critaria", $" WHERE  A1.PeriodID={PeriodCode} and A2.EmpID In ({EmpCode})");
+                    oDocument.SetParameterValue("Critaria", $" WHERE  A1.PeriodID={PeriodCode} and A2.EmpID In ({EmpList})");
                     rptViewer.ReportSource = oDocument;
                 }
                 else
@@ -57,7 +63,7 @@ namespace AttendanceService.Properties
                     string filepath = Path.Combine(Environment.CurrentDirectory.ToString(), "Report", "TempAttendanceReport.rpt");
                     oDocument.Load(filepath);
                     oDocument.SetDatabaseLogon(Settings.Default.DBUser, Settings.Default.DBPassword, Settings.Default.ServerName, Settings.Default.Database);
-                    oDocument.SetParameterValue("Critaria", $" WHERE A1.EmpID In ({EmpCode}) AND A4.PunchedDate BETWEEN '{FromDate}' AND '{ToDate}'");
+                    oDocument.SetParameterValue("Critaria", $" WHERE A1.EmpID In ({EmpList}) AND A4.PunchedDate BETWEEN '{FromDate}' AND '{ToDate}'");
                     rptViewer.ReportSource = oDocument;
                 }
             }
