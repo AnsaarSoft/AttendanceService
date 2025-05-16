@@ -289,7 +289,6 @@ namespace AttendanceService
                             if (oEmpLeave is null)
                             {
                                 logger.Info($"employee leave not assign, for employee {oEmp.EmpID}");
-
                             }
                             else
                             {
@@ -340,6 +339,8 @@ namespace AttendanceService
                                 }
                             }
                             ProcessEmployeeMonth(oEmp, oPeriod, oLeaves);
+                            //Addsandwich leave conditions.
+                            SandwichLeaves(oEmp);
                         }
                     }
                 }
@@ -367,6 +368,7 @@ namespace AttendanceService
                     DateTime loopEnd = dtTo.Value;
                     int ShortLeave = 0;
                     int PenaltyCount = 0;
+                    int GracePeriod = 0;
                     var oAttendanceRule = (from a in odb.MstAttendanceRule
                                            select a).FirstOrDefault();
                     for (DateTime i = loopStart; i <= loopEnd; i = i.AddDays(1))
@@ -688,7 +690,7 @@ namespace AttendanceService
                                     flgNewLeave = false;
                                     LeaveHour = ShiftDuration;
                                     LeaveType = oLeaveRequest.MstLeaveType.Description;
-                                    LeaveCount = 1;
+                                    LeaveCount = oLeaveRequest.TotalCount.GetValueOrDefault();
                                     LeaveTypeID = oLeaveRequest.LeaveType ?? 0;
                                 }
                             }
@@ -705,25 +707,36 @@ namespace AttendanceService
                                                       && a.EmpID == oEmp.ID
                                                       select a).Count();
                                     string DeductionRule = CalculateDeductionRule(TimeConvert(TimeDiff));
+                                    int GracePeriodDR = ReturnGracePeriodDeductionRule(DeductionRule);
+
                                     if (DeductionRule == "DR_01")
                                     {
                                         ShortLeave++;
+                                        GracePeriod++;
                                     }
                                     if (LeaveCheck == 0)
                                     {
-                                        if (ShortLeave % 2 == 0)
+                                        if (DeductionRule == "DR_01")
                                         {
-                                            var oLT = (from a in oLeaveBal
-                                                       where a.Balance > 0
-                                                       orderby a.Priority ascending
-                                                       select a).FirstOrDefault();
-                                            if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
-                                            flgNewLeave = true;
-                                            LeaveHour = TimeDiff;
-                                            LeaveType = oLT.LeaveType;
-                                            LeaveTypeID = oLT.ID;
-                                            LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
-                                            oLT.Balance -= 1;
+                                            if (GracePeriod > GracePeriodDR)
+                                            {
+
+                                                var oLT = (from a in oLeaveBal
+                                                           where a.Balance > 0
+                                                           orderby a.Priority ascending
+                                                           select a).FirstOrDefault();
+                                                if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
+                                                flgNewLeave = true;
+                                                LeaveHour = TimeDiff;
+                                                LeaveType = oLT.LeaveType;
+                                                LeaveTypeID = oLT.ID;
+                                                LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                                oLT.Balance -= 1;
+                                            }
+                                            else
+                                            {
+                                                logger.Info($"deduction rule 1 grace period {GracePeriod} date {i.ToString("dd MMM yyyy")} employee {oEmp.EmpID} no deduction.");
+                                            }
                                         }
                                         else if (DeductionRule == "DR_02")
                                         {
@@ -769,8 +782,7 @@ namespace AttendanceService
                                 }
                             }
 
-
-                            //if workhour is not ok 
+                            //if workhour is less then shift hour
                             if (iShiftDuration > iWorkHour && iTimeIn > 0 && iTimeOut > 0)
                             {
                                 string TimeDiff = TimeConvert(iShiftDuration - iWorkHour);
@@ -779,27 +791,36 @@ namespace AttendanceService
                                                   && a.EmpID == oEmp.ID
                                                   select a).Count();
                                 string DeductionRule = CalculateDeductionRule(TimeConvert(TimeDiff));
+                                int GracePeriodDR = ReturnGracePeriodDeductionRule(DeductionRule);
+
                                 if (DeductionRule == "DR_01")
                                 {
                                     ShortLeave++;
+                                    GracePeriod++;
                                 }
                                 if (LeaveCheck == 0)
                                 {
-                                    //short leave working
-                                    //if (ShortLeave % 2 == 0)
-                                    if(DeductionRule == "DR_01")
+                                    if (DeductionRule == "DR_01")
                                     {
-                                        var oLT = (from a in oLeaveBal
-                                                   where a.Balance > 0
-                                                   orderby a.Priority ascending
-                                                   select a).FirstOrDefault();
-                                        if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
-                                        flgNewLeave = true;
-                                        LeaveHour = TimeDiff;
-                                        LeaveType = oLT.LeaveType;
-                                        LeaveTypeID = oLT.ID;
-                                        LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
-                                        oLT.Balance -= 1;
+                                        if (GracePeriod > GracePeriodDR)
+                                        {
+                                            logger.Info($"deduction rule 1 grace period {GracePeriod} date {i.ToString("dd MMM yyyy")} employee {oEmp.EmpID} deducted.");
+                                            var oLT = (from a in oLeaveBal
+                                                       where a.Balance > 0
+                                                       orderby a.Priority ascending
+                                                       select a).FirstOrDefault();
+                                            if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); continue; }
+                                            flgNewLeave = true;
+                                            LeaveHour = TimeDiff;
+                                            LeaveType = oLT.LeaveType;
+                                            LeaveTypeID = oLT.ID;
+                                            LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                            oLT.Balance -= 1;
+                                        }
+                                        else
+                                        {
+                                            logger.Info($"deduction rule 1 grace period {GracePeriod} date {i.ToString("dd MMM yyyy")} employee {oEmp.EmpID} no deduction.");
+                                        }
                                     }
                                     else if (DeductionRule == "DR_02")
                                     {
@@ -1070,6 +1091,94 @@ namespace AttendanceService
                 logger.Error(ex, ex.Message);
             }
         }
+        void SandwichLeaves(MstEmployee oEmp)
+        {
+            try
+            {
+                using (var odb = new dbHRMS(ConnectionString))
+                {
+                    DataTable dtEmployee = dtProcessed.Clone();
+                    foreach (DataRow row in dtProcessed.Select($"EmpCode = {oEmp.EmpID}"))
+                    {
+                        dtEmployee.ImportRow(row);
+                        row.Delete();
+                    }
+                    dtProcessed.AcceptChanges();
+
+                    for (int i = 0; i < dtEmployee.Rows.Count; i++)
+                    {
+                        string EmpCode = string.Empty;
+                        bool flgNewLeave = false;
+                        string shifthour = string.Empty;
+
+                        EmpCode = Convert.ToString(dtEmployee.Rows[i]["EmpCode"]);
+                        flgNewLeave = Convert.ToBoolean(dtEmployee.Rows[i]["LeaveNew"]);
+                        shifthour = Convert.ToString(dtEmployee.Rows[i]["ShiftDuration"]);
+
+                        if (flgNewLeave)
+                        {
+                            //get next days value
+                            int nextday = i + 1;
+                            if (nextday < dtEmployee.Rows.Count)
+                            {
+                                string nextdayshifthour = string.Empty;
+                                int ndshifthour = 0;
+                                nextdayshifthour = Convert.ToString(dtEmployee.Rows[nextday]["ShiftDuration"]);
+                                //check if its holiday or not.
+                                ndshifthour = TimeConvert(nextdayshifthour);
+                                if (ndshifthour == 0)
+                                {
+                                    //check for next day if its possible.
+                                    int daythree = nextday + 1;
+                                    if (daythree < dtEmployee.Rows.Count)
+                                    {
+                                        //next day is holiday get day after tommorrow.
+                                        bool datflgNewLeave = false;
+                                        datflgNewLeave = Convert.ToBoolean(dtEmployee.Rows[i]["LeaveNew"]);
+                                        if (datflgNewLeave)
+                                        {
+                                            var oLeaveType = (from a in odb.MstLeaveType
+                                                              where a.Code.ToLower() == "absent"
+                                                              select a).FirstOrDefault();
+                                            if (oLeaveType != null)
+                                            {
+                                                dtEmployee.Rows[nextday]["LeaveHour"] = shifthour;
+                                                dtEmployee.Rows[nextday]["LeaveType"] = oLeaveType.Description;
+                                                dtEmployee.Rows[nextday]["LeaveCount"] = 1;
+                                                dtEmployee.Rows[nextday]["LTID"] = oLeaveType.ID;
+                                                dtEmployee.Rows[nextday]["LeaveNew"] = true;
+                                            }
+                                            //now day three is also on leave, 
+                                            //then mark day two for sandwich leave.
+                                            //flgNewLeave = true;
+                                            //LeaveHour = ShiftDuration;
+                                            //LeaveType = oLT.LeaveType;
+                                            //LeaveTypeID = oLT.ID;
+                                            //LeaveCount = 1;
+                                            //dr["LeaveHour"] = LeaveHour;
+                                            //dr["LeaveType"] = LeaveType;
+                                            //dr["LeaveNew"] = flgNewLeave;
+                                            //dr["LeaveCount"] = LeaveCount;
+                                            //dr["LTID"] = LeaveTypeID;
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                    foreach (DataRow dr in dtEmployee.Rows)
+                    {
+                        dtProcessed.ImportRow(dr);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
         int TimeConvert(string value)
         {
             try
@@ -1211,6 +1320,33 @@ namespace AttendanceService
             {
                 logger.Error(ex, ex.Message);
                 return "";
+            }
+        }
+        int ReturnGracePeriodDeductionRule(string DeductionRule)
+        {
+            try
+            {
+                using (dbHRMS odb = new dbHRMS(ConnectionString))
+                {
+                    var oDedRule = (from a in odb.MstDeductionRules
+                                    where a.Code == DeductionRule
+                                    select a).FirstOrDefault();
+                    if (oDedRule.GracePeriod == 0)
+                    {
+                        logger.Info($"no grace period on {DeductionRule}");
+                        return 0;
+                    }
+                    else
+                    {
+                        return oDedRule.GracePeriod.Value;
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, ex.Message);
+                return 0;
             }
         }
         void SaveAttendance()
@@ -1683,6 +1819,7 @@ namespace AttendanceService
                     string EmpCode, ShiftDesc, DateDay, StrDate;
                     DateTime CurrentDate = DateTime.Now;
                     bool flgNewLeave = false;
+                    bool flgFullDayLeave = false;
                     string LeaveHour = string.Empty, LeaveType = string.Empty;
                     int LeaveTypeID = 0;
                     decimal LeaveCount = 0;
@@ -1690,6 +1827,8 @@ namespace AttendanceService
                     string OTHours = string.Empty, OTType = string.Empty;
                     bool flgOT = false;
                     int ShortLeave = 0;
+                    int GracePeriod = 0;
+                    int PenaltyCount = 0;
 
                     EmpCode = Convert.ToString(dtProcessed.Rows[ProcessLine]["EmpCode"]);
                     ShiftDesc = Convert.ToString(dtProcessed.Rows[ProcessLine]["Shift"]);
@@ -1722,7 +1861,6 @@ namespace AttendanceService
                     if (oEmpLeave is null)
                     {
                         logger.Info($"employee leave not assign, for employee {oEmp.EmpID}");
-
                     }
                     else
                     {
@@ -1755,6 +1893,8 @@ namespace AttendanceService
                             oLeaveBal.Add(oDoc);
                         }
                     }
+                    var oAttendanceRule = (from a in odb.MstAttendanceRule
+                                           select a).FirstOrDefault();
                     #endregion
 
                     #region Time Value
@@ -1867,6 +2007,7 @@ namespace AttendanceService
                             LeaveCount = 1;
                             LeaveTypeID = oLeaveRequest.LeaveType ?? 0;
                         }
+                        flgFullDayLeave = true;
                     }
 
                     //Missing timein or timeout
@@ -1898,7 +2039,7 @@ namespace AttendanceService
                             flgNewLeave = false;
                             LeaveHour = ShiftHour;
                             LeaveType = oLeaveRequest.MstLeaveType.Description;
-                            LeaveCount = 1;
+                            LeaveCount = oLeaveRequest.TotalCount.GetValueOrDefault();
                             LeaveTypeID = oLeaveRequest.LeaveType ?? 0;
                         }
                     }
@@ -1914,18 +2055,66 @@ namespace AttendanceService
                                               where a.LeaveFrom <= CurrentDate && a.LeaveTo >= CurrentDate
                                               && a.EmpID == oEmp.ID
                                               select a).Count();
+                            string DeductionRule = CalculateDeductionRule(TimeConvert(TimeDiff));
+                            int GracePeriodDR = ReturnGracePeriodDeductionRule(DeductionRule);
+
+                            if (DeductionRule == "DR_01")
+                            {
+                                ShortLeave++;
+                                GracePeriod++;
+                            }
                             if (LeaveCheck == 0)
                             {
-                                var oLT = (from a in oLeaveBal
-                                           where a.Balance > 0
-                                           orderby a.Priority ascending
-                                           select a).FirstOrDefault();
-                                flgNewLeave = true;
-                                LeaveHour = TimeDiff;
-                                LeaveType = oLT.LeaveType;
-                                LeaveTypeID = oLT.ID;
-                                LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
-                                oLT.Balance -= 1;
+                                if (DeductionRule == "DR_01")
+                                {
+                                    if (GracePeriod > GracePeriodDR)
+                                    {
+
+                                        var oLT = (from a in oLeaveBal
+                                                   where a.Balance > 0
+                                                   orderby a.Priority ascending
+                                                   select a).FirstOrDefault();
+                                        if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); }
+                                        flgNewLeave = true;
+                                        LeaveHour = TimeDiff;
+                                        LeaveType = oLT.LeaveType;
+                                        LeaveTypeID = oLT.ID;
+                                        LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                        oLT.Balance -= 1;
+                                    }
+                                    else
+                                    {
+                                        logger.Info($"deduction rule 1 grace period {GracePeriod} date {CurrentDate.ToString("dd MMM yyyy")} employee {oEmp.EmpID} no deduction.");
+                                    }
+                                }
+                                else if (DeductionRule == "DR_02")
+                                {
+                                    var oLT = (from a in oLeaveBal
+                                               where a.Balance > 0
+                                               orderby a.Priority ascending
+                                               select a).FirstOrDefault();
+                                    if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); }
+                                    flgNewLeave = true;
+                                    LeaveHour = TimeDiff;
+                                    LeaveType = oLT.LeaveType;
+                                    LeaveTypeID = oLT.ID;
+                                    LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                    oLT.Balance -= 1;
+                                }
+                                else if (DeductionRule == "DR_03")
+                                {
+                                    var oLT = (from a in oLeaveBal
+                                               where a.Balance > 0
+                                               orderby a.Priority ascending
+                                               select a).FirstOrDefault();
+                                    if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); }
+                                    flgNewLeave = true;
+                                    LeaveHour = TimeDiff;
+                                    LeaveType = oLT.LeaveType;
+                                    LeaveTypeID = oLT.ID;
+                                    LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                    oLT.Balance -= 1;
+                                }
                             }
                             else
                             {
@@ -1942,7 +2131,7 @@ namespace AttendanceService
                         }
                     }
 
-                    //if workhour is not ok 
+                    //if workhour is less then shift hour
                     if (iShiftHour > iWorkHour && iTimeIn > 0 && iTimeOut > 0)
                     {
                         string TimeDiff = TimeConvert(iShiftHour - iWorkHour);
@@ -1951,24 +2140,36 @@ namespace AttendanceService
                                           && a.EmpID == oEmp.ID
                                           select a).Count();
                         string DeductionRule = CalculateDeductionRule(TimeConvert(TimeDiff));
+                        int GracePeriodDR = ReturnGracePeriodDeductionRule(DeductionRule);
+
                         if (DeductionRule == "DR_01")
                         {
                             ShortLeave++;
+                            GracePeriod++;
                         }
                         if (LeaveCheck == 0)
                         {
-                            if (ShortLeave % 2 == 0)
+                            if (DeductionRule == "DR_01")
                             {
-                                var oLT = (from a in oLeaveBal
-                                           where a.Balance > 0
-                                           orderby a.Priority ascending
-                                           select a).FirstOrDefault();
-                                flgNewLeave = true;
-                                LeaveHour = TimeDiff;
-                                LeaveType = oLT.LeaveType;
-                                LeaveTypeID = oLT.ID;
-                                LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
-                                oLT.Balance -= 1;
+                                if (GracePeriod > GracePeriodDR)
+                                {
+                                    logger.Info($"deduction rule 1 grace period {GracePeriod} date {CurrentDate.ToString("dd MMM yyyy")} employee {oEmp.EmpID} deducted.");
+                                    var oLT = (from a in oLeaveBal
+                                               where a.Balance > 0
+                                               orderby a.Priority ascending
+                                               select a).FirstOrDefault();
+                                    if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); }
+                                    flgNewLeave = true;
+                                    LeaveHour = TimeDiff;
+                                    LeaveType = oLT.LeaveType;
+                                    LeaveTypeID = oLT.ID;
+                                    LeaveCount = CalculateDeductionCount(TimeConvert(TimeDiff));
+                                    oLT.Balance -= 1;
+                                }
+                                else
+                                {
+                                    logger.Info($"deduction rule 1 grace period {GracePeriod} date {CurrentDate.ToString("dd MMM yyyy")} employee {oEmp.EmpID} no deduction.");
+                                }
                             }
                             else if (DeductionRule == "DR_02")
                             {
@@ -1976,6 +2177,7 @@ namespace AttendanceService
                                            where a.Balance > 0
                                            orderby a.Priority ascending
                                            select a).FirstOrDefault();
+                                if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); }
                                 flgNewLeave = true;
                                 LeaveHour = TimeDiff;
                                 LeaveType = oLT.LeaveType;
@@ -1989,6 +2191,7 @@ namespace AttendanceService
                                            where a.Balance > 0
                                            orderby a.Priority ascending
                                            select a).FirstOrDefault();
+                                if (oLT == null) { RadMessageBox.Show("Check leave type & balance."); }
                                 flgNewLeave = true;
                                 LeaveHour = TimeDiff;
                                 LeaveType = oLT.LeaveType;
@@ -2008,6 +2211,40 @@ namespace AttendanceService
                             LeaveType = oLeaveRequest.MstLeaveType.Description;
                             LeaveCount = oLeaveRequest.TotalCount.GetValueOrDefault();
                             LeaveTypeID = oLeaveRequest.LeaveType ?? 0;
+                        }
+                    }
+
+                    //Missing In/Out Penalty
+                    if ((iTimeIn == 0 || iTimeOut == 0) && iShiftHour > 0 && !flgFullDayLeave)
+                    {
+                        string DeductionRule = string.Empty;
+
+                        if (oAttendanceRule.FlgMissingTimePenalty.GetValueOrDefault())
+                        {
+                            DeductionRule = "DR_04";
+                            PenaltyCount += 1;
+                        }
+                        if (PenaltyCount >= oAttendanceRule.MissingTimePanaltyCounter.GetValueOrDefault())
+                        {
+                            PenaltyCount = 0;
+                            MstLeaveType oLeaveMaster = null;
+                            if (DeductionRule == "DR_04")
+                            {
+                                oLeaveMaster = (from a in odb.MstLeaveType where a.Code == oAttendanceRule.MPTLeaveType select a).FirstOrDefault();
+                            }
+                            else
+                            {
+                                oLeaveMaster = (from a in odb.MstLeaveType where a.Code == oAttendanceRule.LeaveTypeWOP select a).FirstOrDefault();
+                            }
+                            if (oLeaveMaster != null)
+                            {
+                                flgNewLeave = true;
+                                LeaveHour = ShiftHour;
+                                LeaveType = oLeaveMaster.Description;
+                                LeaveTypeID = oLeaveMaster.ID;
+                                LeaveCount = 0.5M;
+                            }
+
                         }
                     }
 
@@ -2250,37 +2487,42 @@ namespace AttendanceService
                         return;
                     }
                     byte[] reportinbytes = oReport.RptFileStr.ToArray();
-                    string filename = Application.StartupPath + "\\SlipRpt.rpt";
-                    using (FileStream fs = new FileStream(filename, FileMode.Create))
+                    string filenamereport = Application.StartupPath + "\\SlipRpt.rpt";
+                    using (FileStream fs = new FileStream(filenamereport, FileMode.Create))
                     {
                         int filelenght = reportinbytes.Length;
                         fs.Write(reportinbytes, 0, filelenght);
                         fs.Flush();
                         fs.Close();
                     }
-                    ReportDocument oReportDoc = new ReportDocument();
-                    oReportDoc.Load(filename);
-                    //Set databasevalues.
-                    SetReport(oReportDoc);
-                    ParameterFieldDefinitions fielddefination = oReportDoc.DataDefinition.ParameterFields;
-                    ParameterDiscreteValue prmValue = new ParameterDiscreteValue();
-                    ParameterFieldDefinition prmDef = fielddefination["Critaria"];
-                    ParameterValues prmCollection = new ParameterValues();
-                    prmCollection = prmDef.CurrentValues;
-                    prmValue.Value = string.Format(" Where TrnsSalaryProcessRegister.Id = {0}", SlipId);
-                    prmCollection.Add(prmValue);
-                    prmDef.ApplyCurrentValues(prmCollection);
+                    string filenameexport = Application.StartupPath + $"\\Exports\\{SlipId}.pdf";
+                    using (ReportDocument oReportDoc = new ReportDocument())
+                    {
 
-                    ExportOptions CrExportOptions;
-                    DiskFileDestinationOptions CrDiskFileDestinationOptions = new DiskFileDestinationOptions();
-                    PdfRtfWordFormatOptions CrFormatTypeOptions = new PdfRtfWordFormatOptions();
-                    CrDiskFileDestinationOptions.DiskFileName = Application.StartupPath + $"\\{SlipId}.pdf";
-                    CrExportOptions = oReportDoc.ExportOptions;
-                    CrExportOptions.ExportDestinationType = ExportDestinationType.DiskFile;
-                    CrExportOptions.ExportFormatType = ExportFormatType.PortableDocFormat;
-                    CrExportOptions.DestinationOptions = CrDiskFileDestinationOptions;
-                    CrExportOptions.FormatOptions = CrFormatTypeOptions;
-                    oReportDoc.Export();
+
+                        oReportDoc.Load(filenamereport);
+                        //Set databasevalues.
+                        SetReport(oReportDoc);
+                        ParameterFieldDefinitions fielddefination = oReportDoc.DataDefinition.ParameterFields;
+                        ParameterDiscreteValue prmValue = new ParameterDiscreteValue();
+                        ParameterFieldDefinition prmDef = fielddefination["Critaria"];
+                        ParameterValues prmCollection = new ParameterValues();
+                        prmCollection = prmDef.CurrentValues;
+                        prmValue.Value = string.Format(" Where TrnsSalaryProcessRegister.Id = {0}", SlipId);
+                        prmCollection.Add(prmValue);
+                        prmDef.ApplyCurrentValues(prmCollection);
+
+                        ExportOptions CrExportOptions;
+                        DiskFileDestinationOptions CrDiskFileDestinationOptions = new DiskFileDestinationOptions();
+                        PdfRtfWordFormatOptions CrFormatTypeOptions = new PdfRtfWordFormatOptions();
+                        CrDiskFileDestinationOptions.DiskFileName = filenameexport;
+                        CrExportOptions = oReportDoc.ExportOptions;
+                        CrExportOptions.ExportDestinationType = ExportDestinationType.DiskFile;
+                        CrExportOptions.ExportFormatType = ExportFormatType.PortableDocFormat;
+                        CrExportOptions.DestinationOptions = CrDiskFileDestinationOptions;
+                        CrExportOptions.FormatOptions = CrFormatTypeOptions;
+                        oReportDoc.Export();
+                    }
 
                     var email = odb.MstEmailConfig.FirstOrDefault();
                     string MonthName = Convert.ToDateTime(PeriodStartDate).ToString("MMMM", CultureInfo.InvariantCulture);
@@ -2301,14 +2543,12 @@ namespace AttendanceService
                     mail.IsBodyHtml = true;
                     try
                     {
-                        Attachment attachment = new Attachment(Application.StartupPath + $"\\{SlipId}.pdf");
+                        Attachment attachment = new Attachment(filenameexport);
                         attachment.Name = PeriodName + " " + EmpName + ".pdf";  // set name here
                         mail.Attachments.Add(attachment);
-                        //mail.Attachments.Add(new Attachment(Application.StartupPath + "\\test.pdf"));
                         SmtpClient client = new SmtpClient(email.SMTPServer);
                         client.Port = Convert.ToInt32(email.SMTPort);
                         client.Credentials = new System.Net.NetworkCredential(email.FromEmail, email.Password);
-                        //if (email.TestEmail.ToLower().Trim() == "y")
                         if (Convert.ToBoolean(email.SSL) == true)
                         {
                             client.EnableSsl = true;
@@ -2319,6 +2559,7 @@ namespace AttendanceService
                         }
                         client.Send(mail);
                         mail.Dispose();
+                        File.Delete(filenameexport);
                     }
                     catch (Exception ex)
                     {
@@ -2338,30 +2579,32 @@ namespace AttendanceService
             {
                 using (var odb = new dbHRMS(ConnectionString))
                 {
-                    string filename = Application.StartupPath + "\\Report\\AttendanceReport.rpt";
-                    ReportDocument oReportDoc = new ReportDocument();
-                    oReportDoc.Load(filename);
-                    //Set databasevalues.
-                    SetReport(oReportDoc);
-                    ParameterFieldDefinitions fielddefination = oReportDoc.DataDefinition.ParameterFields;
-                    ParameterDiscreteValue prmValue = new ParameterDiscreteValue();
-                    ParameterFieldDefinition prmDef = fielddefination["Critaria"];
-                    ParameterValues prmCollection = new ParameterValues();
-                    prmCollection = prmDef.CurrentValues;
-                    prmValue.Value = string.Format(" WHERE  A1.PeriodID= {0} and A2.EmpID= '{1}' ", PeriodId, EmpId);
-                    prmCollection.Add(prmValue);
-                    prmDef.ApplyCurrentValues(prmCollection);
+                    string filename = Application.StartupPath + $"\\Report\\AttendanceReport.rpt";
+                    string filenameexport = Application.StartupPath + $"\\Exports\\{EmpId}.pdf";
+                    using (ReportDocument oReportDoc = new ReportDocument())
+                    {
+                        oReportDoc.Load(filename);
+                        SetReport(oReportDoc);
+                        ParameterFieldDefinitions fielddefination = oReportDoc.DataDefinition.ParameterFields;
+                        ParameterDiscreteValue prmValue = new ParameterDiscreteValue();
+                        ParameterFieldDefinition prmDef = fielddefination["Critaria"];
+                        ParameterValues prmCollection = new ParameterValues();
+                        prmCollection = prmDef.CurrentValues;
+                        prmValue.Value = string.Format(" WHERE  A1.PeriodID= {0} and A2.EmpID= '{1}' ", PeriodId, EmpId);
+                        prmCollection.Add(prmValue);
+                        prmDef.ApplyCurrentValues(prmCollection);
 
-                    ExportOptions CrExportOptions;
-                    DiskFileDestinationOptions CrDiskFileDestinationOptions = new DiskFileDestinationOptions();
-                    PdfRtfWordFormatOptions CrFormatTypeOptions = new PdfRtfWordFormatOptions();
-                    CrDiskFileDestinationOptions.DiskFileName = Application.StartupPath + $"\\{EmpId}.pdf";
-                    CrExportOptions = oReportDoc.ExportOptions;
-                    CrExportOptions.ExportDestinationType = ExportDestinationType.DiskFile;
-                    CrExportOptions.ExportFormatType = ExportFormatType.PortableDocFormat;
-                    CrExportOptions.DestinationOptions = CrDiskFileDestinationOptions;
-                    CrExportOptions.FormatOptions = CrFormatTypeOptions;
-                    oReportDoc.Export();
+                        ExportOptions CrExportOptions;
+                        DiskFileDestinationOptions CrDiskFileDestinationOptions = new DiskFileDestinationOptions();
+                        PdfRtfWordFormatOptions CrFormatTypeOptions = new PdfRtfWordFormatOptions();
+                        CrDiskFileDestinationOptions.DiskFileName = filenameexport;
+                        CrExportOptions = oReportDoc.ExportOptions;
+                        CrExportOptions.ExportDestinationType = ExportDestinationType.DiskFile;
+                        CrExportOptions.ExportFormatType = ExportFormatType.PortableDocFormat;
+                        CrExportOptions.DestinationOptions = CrDiskFileDestinationOptions;
+                        CrExportOptions.FormatOptions = CrFormatTypeOptions;
+                        oReportDoc.Export();
+                    }
 
                     var email = odb.MstEmailConfig.FirstOrDefault();
                     string MonthName = Convert.ToDateTime(PeriodStartDate).ToString("MMMM", CultureInfo.InvariantCulture);
@@ -2382,14 +2625,12 @@ namespace AttendanceService
                     mail.IsBodyHtml = true;
                     try
                     {
-                        Attachment attachment = new Attachment(Application.StartupPath + $"\\{EmpId}.pdf");
+                        Attachment attachment = new Attachment(filenameexport);
                         attachment.Name = PeriodName + " " + EmpName + ".pdf";  // set name here
                         mail.Attachments.Add(attachment);
-                        //mail.Attachments.Add(new Attachment(Application.StartupPath + "\\test.pdf"));
                         SmtpClient client = new SmtpClient(email.SMTPServer);
                         client.Port = Convert.ToInt32(email.SMTPort);
                         client.Credentials = new System.Net.NetworkCredential(email.FromEmail, email.Password);
-                        //if (email.TestEmail.ToLower().Trim() == "y")
                         if (Convert.ToBoolean(email.SSL) == true)
                         {
                             client.EnableSsl = true;
@@ -2400,6 +2641,7 @@ namespace AttendanceService
                         }
                         client.Send(mail);
                         mail.Dispose();
+                        File.Delete(filename);
                     }
                     catch (Exception ex)
                     {
@@ -2412,6 +2654,7 @@ namespace AttendanceService
             {
                 logger.Error(ex);
             }
+
         }
         void SetReport(ReportDocument rep)
         {
@@ -2561,6 +2804,7 @@ namespace AttendanceService
                 logger.Error(ex);
             }
         }
+
         #endregion
 
         #region Events
