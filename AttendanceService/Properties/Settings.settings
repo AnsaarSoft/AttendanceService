@@ -21,7 +21,7 @@
       <Value Profile="(Default)">MFMLAP</Value>
     </Setting>
     <Setting Name="AttDbDatabase" Type="System.String" Scope="User">
-      <Value Profile="(Default)">ODAttTest</Value>
+      <Value Profile="(Default)">AttendanceDB</Value>
     </Setting>
     <Setting Name="AttDbPassword" Type="System.String" Scope="User">
       <Value Profile="(Default)">super</Value>

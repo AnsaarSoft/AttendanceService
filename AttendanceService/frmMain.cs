@@ -1110,12 +1110,13 @@ namespace AttendanceService
                         string EmpCode = string.Empty;
                         bool flgNewLeave = false;
                         string shifthour = string.Empty;
+                        decimal LeaveCount = 0;
 
                         EmpCode = Convert.ToString(dtEmployee.Rows[i]["EmpCode"]);
                         flgNewLeave = Convert.ToBoolean(dtEmployee.Rows[i]["LeaveNew"]);
                         shifthour = Convert.ToString(dtEmployee.Rows[i]["ShiftDuration"]);
-
-                        if (flgNewLeave)
+                        LeaveCount = Convert.ToDecimal(dtEmployee.Rows[i]["LeaveCount"]);
+                        if (flgNewLeave && LeaveCount == 1)
                         {
                             //get next days value
                             int nextday = i + 1;
@@ -1550,6 +1551,7 @@ namespace AttendanceService
                                         oLeaveRec.TotalCount = oAttendance.LeaveCount;
                                         oLeaveRec.CalCode = oPeriod.CalCode;
                                         oLeaveRec.AttendanceID = oAttendance.Id;
+                                        oLeaveRec.FlgPaid = false;
                                         oLeaveRec.CreatedBy = "DSKApp";
                                         oLeaveRec.CreateDate = DateTime.Now;
                                         oLeaveRec.UpdatedBy = "DSKApp";
@@ -2356,7 +2358,7 @@ namespace AttendanceService
                                 if (oCheck == 0)
                                 {
                                     string strQuery =
-                                        $"select a.CardNo AS EmployeeCode, CAST( a.PunchDatetime AS DATE) AS PunchedDate, CAST(CAST(a.PunchDatetime AS TIME) AS NVARCHAR(5)) AS PunchedTime from Tran_MachineRawPunch as a where a.CardNo = {oEmp.EmpID} and CAST(a.PunchDatetime as date) = '{i.ToString("yyyy-MM-dd")}'";
+                                        $"select a.CardNo AS EmployeeCode, CAST( a.PunchDatetime AS DATE) AS PunchedDate, CAST(CAST(a.PunchDatetime AS TIME) AS NVARCHAR(5)) AS PunchedTime, Case When Isnull(a.inout, 'In') = 'In' Then '1' Else '2' End AS PunchedType from Tran_MachineRawPunch as a where a.CardNo = {oEmp.EmpID} and CAST(a.PunchDatetime as date) = '{i.ToString("yyyy-MM-dd")}'";
                                     using (SqlConnection connection = new SqlConnection(AttConnectionString))
                                     {
                                         connection.Open();
@@ -2396,7 +2398,7 @@ namespace AttendanceService
                                         connection.Close();
                                     }
                                     string strQuery =
-                                        $"select a.CardNo AS EmployeeCode, CAST( a.PunchDatetime AS DATE) AS PunchedDate, CAST(CAST(a.PunchDatetime AS TIME) AS NVARCHAR(5)) AS PunchedTime from Tran_MachineRawPunch as a where a.CardNo = {oEmp.EmpID} and CAST(a.PunchDatetime as date) = '{i.ToString("yyyy-MM-dd")}'";
+                                        $"select a.CardNo AS EmployeeCode, CAST( a.PunchDatetime AS DATE) AS PunchedDate, CAST(CAST(a.PunchDatetime AS TIME) AS NVARCHAR(5)) AS PunchedTime, Case When Isnull(a.inout, 'In') = 'In' Then '1' Else '2' End AS PunchedType from Tran_MachineRawPunch as a where a.CardNo = {oEmp.EmpID} and CAST(a.PunchDatetime as date) = '{i.ToString("yyyy-MM-dd")}'";
 
                                     using (SqlConnection connection = new SqlConnection(AttConnectionString))
                                     {
